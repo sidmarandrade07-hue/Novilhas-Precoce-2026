@@ -146,7 +146,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin: 24px 
 </main>
 
 <script>
-const $ = id => document.getElementById(id);
+const \$ = id => document.getElementById(id);
 const fmt0 = n => Number(n||0).toLocaleString('pt-BR', {maximumFractionDigits:0});
 const fmt1 = n => n==null ? '—' : Number(n).toLocaleString('pt-BR', {minimumFractionDigits:1, maximumFractionDigits:1});
 const fmt3 = n => n==null ? '—' : Number(n).toLocaleString('pt-BR', {minimumFractionDigits:3, maximumFractionDigits:3});
@@ -157,7 +157,7 @@ const colors = ['#0033a0', '#5b9bd5', '#1a60ad', '#8faadc', '#4a90e2', '#a0c4f2'
 
 function valid(r) { return Number(r.qtde) > 0; }
 function filtered() {
-    let f = $('fazenda').value, r = $('retiro').value, c = $('cb').value;
+    let f = \$('fazenda').value, r = $('retiro').value, c =$('cb').value;
     return allRows.filter(row => (!f || row.fazenda === f) && (!r || row.retiro === r) && (!c || String(row.cb) === c));
 }
 function weighted(rows, key) {
@@ -166,32 +166,32 @@ function weighted(rows, key) {
 }
 
 function updateFilters() {
-    let f = $('fazenda').value, r = $('retiro').value, c = $('cb').value;
+    let f = \$('fazenda').value, r = $('retiro').value, c =$('cb').value;
     
     let rowsF = allRows.filter(row => (!r || row.retiro === r) && (!c || String(row.cb) === c));
     let rowsR = allRows.filter(row => (!f || row.fazenda === f) && (!c || String(row.cb) === c));
     let rowsC = allRows.filter(row => (!f || row.fazenda === f) && (!r || row.retiro === r));
 
     setOptions('fazenda', [...new Set(rowsF.map(x => x.fazenda).filter(Boolean))].sort(), 'Todas as fazendas');
-    $('fazenda').value = f; if(!$('fazenda').value) $('fazenda').value = '';
+    \$('fazenda').value = f; if(!$('fazenda').value)$('fazenda').value = '';
 
     setOptions('retiro', [...new Set(rowsR.map(x => x.retiro).filter(Boolean))].sort(), 'Todos os retiros');
-    $('retiro').value = r; if(!$('retiro').value) $('retiro').value = '';
+    \$('retiro').value = r; if(!$('retiro').value)$('retiro').value = '';
 
     setOptions('cb', [...new Set(rowsC.map(x => x.cb).filter(v => v != null))].sort((a,b)=>a-b), 'Todos os carimbos');
-    $('cb').value = c; if(!$('cb').value) $('cb').value = '';
+    \$('cb').value = c; if(!$('cb').value)$('cb').value = '';
 
     render();
 }
 
 function setOptions(id, values, label) {
-    $(id).innerHTML = `<option value="">${label}</option>` + values.map(v => `<option value="${esc(String(v))}">${esc(String(v))}</option>`).join('');
+    \$(id).innerHTML = `<option value="">${label}</option>` + values.map(v => `<option value="${esc(String(v))}">${esc(String(v))}</option>`).join('');
 }
 function legend(id, items) {
-    $(id).innerHTML = items.map((it, i) => `<span class="legitem"><i class="swatch" style="background:${it.color || colors[i%colors.length]}"></i>${esc(it.label)}</span>`).join('');
+    \$(id).innerHTML = items.map((it, i) => `<span class="legitem"><i class="swatch" style="background:${it.color || colors[i%colors.length]}"></i>${esc(it.label)}</span>`).join('');
 }
 function prepCanvas(id) {
-    let c = $(id), rect = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    let c = \$(id), rect = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
     c.width = Math.max(1, Math.floor(rect.width * dpr));
     c.height = Math.max(1, Math.floor(rect.height * dpr));
     let x = c.getContext('2d'); x.scale(dpr, dpr);
@@ -222,7 +222,7 @@ function drawBars(id, labels, series, unit='') {
             if (x.roundRect) x.roundRect(xx, yy, Math.max(2, barw - 3), bh, 3); else x.rect(xx, yy, Math.max(2, barw - 3), bh);
             x.fill();
 
-            // Rótulo de valor em cima de cada barra (fonte menor, cor cinza suave, sem grito)
+            // Rótulo de valor suave em cima de cada barra
             x.fillStyle = '#5a738e'; x.font = '10px Segoe UI'; x.textAlign = 'center';
             let txt = unit === 'kg/dia' ? Number(v).toFixed(2) : Math.round(v).toLocaleString('pt-BR');
             x.fillText(txt, xx + (barw - 3) / 2, yy - 5);
@@ -274,7 +274,7 @@ function handleBarClick(e) {
         let labels = JSON.parse(c.dataset.labels);
         let clickedCB = labels[index];
         if (clickedCB != null) {
-            $('cb').value = $('cb').value === String(clickedCB) ? '' : String(clickedCB);
+            $('cb').value =$('cb').value === String(clickedCB) ? '' : String(clickedCB);
             updateFilters();
         }
     }
@@ -289,26 +289,23 @@ function handleDonutClick(e) {
         let slices = JSON.parse(c.dataset.slices);
         let clicked = slices.find(s => clickAngle >= s.start && clickAngle <= s.end);
         if (clicked) {
-            $('fazenda').value = $('fazenda').value === clicked.val ? '' : clicked.val;
+            $('fazenda').value =$('fazenda').value === clicked.val ? '' : clicked.val;
             updateFilters();
         }
     }
 }
 
-$('chartQtd').addEventListener('click', handleBarClick);
-$('chartPeso').addEventListener('click', handleBarClick);
-$('chartGmd').addEventListener('click', handleBarClick);
-$('chartFaz').addEventListener('click', handleDonutClick);
+$('chartQtd').addEventListener('click', handleBarClick);$('chartPeso').addEventListener('click', handleBarClick);
+$('chartGmd').addEventListener('click', handleBarClick);$('chartFaz').addEventListener('click', handleDonutClick);
 
 function render() {
     let rows = filtered(), active = rows.filter(valid), q = active.reduce((s, r) => s + r.qtde, 0);
     let entry = weighted(active, 'entrada'), current = weighted(active, 'atual'), gmd = weighted(active, 'gmd');
     
-    $('kQtde').textContent = fmt0(q);
-    $('kAtual').textContent = current != null ? fmt1(current) + ' kg' : '—';
-    $('kGmd').textContent = gmd != null ? fmt3(gmd) : '—';
-    $('kEvol').textContent = entry != null && current != null ? '+' + fmt1(current - entry) + ' kg' : '—';
-    if(entry != null && current != null && current < entry) $('kEvol').textContent = fmt1(current - entry) + ' kg';
+    $('kQtde').textContent = fmt0(q);$('kAtual').textContent = current != null ? fmt1(current) + ' kg' : '—';
+    \$('kGmd').textContent = gmd != null ? fmt3(gmd) : '—';
+    \$('kEvol').textContent = entry != null && current != null ? '+' + fmt1(current - entry) + ' kg' : '—';
+    if(entry != null && current != null && current < entry) \$('kEvol').textContent = fmt1(current - entry) + ' kg';
 
     let cbs = [...new Set(rows.map(r => r.cb).filter(v => v != null))].sort((a,b) => Number(a) - Number(b));
     let qBy = cbs.map(cb => rows.filter(r => r.cb === cb).reduce((s, r) => s + (r.qtde||0), 0));
@@ -327,38 +324,4 @@ function render() {
 
     let farms = [...new Set(rows.map(r => r.fazenda))].sort();
     let fq = farms.map(f => rows.filter(r => r.fazenda === f).reduce((s, r) => s + (r.qtde||0), 0));
-    drawDonut('chartFaz', farms, fq);
-    legend('legendFaz', farms.map((f, i) => ({label: `${f} · ${fmt0(fq[i])} (${q ? Math.round(fq[i]/q*100) : 0}%)`, color: colors[i % colors.length]})));
-
-    $('tbody').innerHTML = rows.map(r => {
-        let evol = r.entrada != null && r.atual != null ? r.atual - r.entrada : null;
-        let evolHtml = evol != null ? `<span style="color:${evol > 0 ? 'var(--green)' : 'var(--red)'};font-weight:700">${evol > 0 ? '+':''}${fmt1(evol)}</span>` : '—';
-        return `<tr><td>${esc(r.fazenda)}</td><td>${esc(r.retiro)}</td><td><strong>${esc(r.cb)}</strong></td><td>${fmt0(r.qtde)}</td><td>${fmt1(r.entrada)}</td><td>${fmt1(r.atual)}</td><td>${fmt3(r.gmd)}</td><td>${evolHtml}</td></tr>`;
-    }).join('') || '<tr><td colspan="8" class="empty">Nenhum registro encontrado para essa seleção.</td></tr>';
-}
-
-async function load() {
-    try {
-        let res = await fetch('data.json?t=' + Date.now(), {cache: 'no-store'});
-        let d = await res.json();
-        if (d.stamp !== lastStamp) {
-            lastStamp = d.stamp;
-            allRows = d.rows || [];
-            updateFilters();
-        }
-        $('status').innerHTML = `<span class="status-dot">●</span> Atualizado: ${d.updated || 'agora'}`;
-        $('error').style.display = 'none';
-    } catch(e) {
-        $('status').innerHTML = `<span class="status-dot" style="color:var(--red)">●</span> Erro`;
-        $('error').style.display = 'block';
-        $('error'.textContent = 'Não foi possível carregar o arquivo data.json.';
-    }
-}
-
-['fazenda','retiro','cb'].forEach(id => $(id).addEventListener('change', updateFilters));
-$('reset').onclick = () => { ['fazenda','retiro','cb'].forEach(id => $(id).value = ''); updateFilters(); };
-window.addEventListener('resize', render);
-load(); 
-</script>
-</body>
-</html>
+    drawDonut('chartFaz', farms
