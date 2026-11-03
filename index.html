@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard | Novilhas Precoces 2026</title>
+<style>
+:root {
+    --bg: #eff3f8;
+    --ink: #03173d;
+    --muted: #5a738e;
+    --blue: #002d84;
+    --light-blue: #66a3ea;
+    --line: #cddced;
+    --card-bg: #ffffff;
+    --btn-bg: #004ea8;
+    --green: #00994d;
+    --red: #d32f2f;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: "Segoe UI", Arial, sans-serif; color: var(--ink); }
+header { 
+    background: #021a4f; 
+    color: white; 
+    padding: 22px clamp(18px, 4vw, 52px) 20px; 
+    border-bottom: 4px solid var(--light-blue);
+}
+.head { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+.eyebrow { font-size: 13px; letter-spacing: 1px; text-transform: uppercase; color: #a4c5f4; font-weight: 700; }
+h1 { margin: 6px 0 6px; font-size: clamp(22px, 3vw, 30px); font-weight: 800; }
+header p { margin: 0; color: #d0e1f9; font-size: 14px; }
+.status { font-size: 14px; font-weight: 600; border: 1px solid #1a3c7a; border-radius: 20px; padding: 8px 14px; background: #ffffff12; }
+.status-dot { color: #00e676; margin-right: 5px; font-size: 16px; }
+main { max-width: 1500px; margin: auto; padding: 22px clamp(14px, 3vw, 38px) 40px; }
+.toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+select, button { font: inherit; border: 1px solid #b6cbea; border-radius: 9px; background: white; padding: 10px 12px; color: var(--ink); font-weight: 600; outline: none; }
+select:focus { border-color: var(--blue); }
+button { cursor: pointer; background: var(--btn-bg); color: #fff; border-color: var(--btn-bg); }
+button:hover { background: var(--blue); }
+.hint { font-size: 12px; color: var(--muted); margin-left: auto; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+.kpi, .panel { 
+    background: var(--card-bg); 
+    border: 2px solid var(--line); 
+    border-radius: 12px; 
+    box-shadow: 0 4px 15px rgba(0, 30, 80, 0.03); 
+}
+.kpi { padding: 18px 20px; position: relative; overflow: hidden; }
+.kpi::after { content: ""; position: absolute; right: -18px; top: -20px; width: 78px; height: 78px; border-radius: 50%; background: #f0f5fb; }
+.kpi .label { font-size: 13px; color: var(--ink); font-weight: 700; position: relative; z-index: 1; }
+.kpi .value { font-size: clamp(26px, 2.5vw, 34px); color: var(--blue); font-weight: 800; margin: 8px 0 4px; position: relative; z-index: 1; }
+.kpi .sub { font-size: 12px; color: var(--muted); font-weight: 600; position: relative; z-index: 1; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.panel { padding: 18px 20px; min-width: 0; }
+.panel h2 { font-size: 17px; margin: 0 0 4px; color: var(--ink); font-weight: 800; }
+.desc { font-size: 13px; color: var(--muted); margin-bottom: 12px; font-weight: 500; }
+.chartwrap { height: 285px; position: relative; width: 100%; }
+canvas { width: 100%; height: 100%; display: block; cursor: pointer; }
+.legend { display: flex; gap: 10px 16px; flex-wrap: wrap; justify-content: center; align-items: center; padding: 11px 12px; margin-top: 8px; min-height: 42px; font-size: 13px; font-weight: 600; color: var(--ink); background: #f7f9fc; border: 1px solid var(--line); border-radius: 9px; }
+.legitem { display: inline-flex; align-items: center; gap: 7px; line-height: 1.4; }
+.swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: 0 0 12px; box-shadow: 0 0 0 1px #00000012; }
+.tablepanel { margin-top: 16px; }
+.tablewrap { overflow: auto; max-height: 340px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+th, td { text-align: right; padding: 11px 12px; border-bottom: 1px solid var(--line); }
+th { position: sticky; top: 0; background: #f7f9fc; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; z-index: 2; }
+th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+.empty { padding: 50px; text-align: center; color: var(--muted); font-weight: 600; }
+footer { color: var(--muted); font-size: 12px; text-align: center; margin: 24px 0 0; font-weight: 600; }
+.error { background: #fff2ef; border: 1px solid #f0c4bc; color: #873b30; padding: 12px; border-radius: 10px; margin-bottom: 14px; display: none; }
+@media(max-width:900px){ .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid { grid-template-columns: 1fr; } .hint { margin-left: 0; } }
+@media(max-width:460px){ .kpis { grid-template-columns: 1fr 1fr; } .kpi { padding: 14px; } .kpi .value { font-size: 22px; } .panel { padding: 14px; } }
+</style>
+</head>
+<body>
+<header>
+    <div class="head">
+        <div style="display: flex; align-items: center; gap: 18px;">
+            <div style="background: #ffffff; padding: 6px 14px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                <img src="Logo.png" alt="Logo Jatobá" style="height: 55px; width: auto; object-fit: contain;">
+            </div>
+            <div>
+                <div class="eyebrow">Gestão Pecuária · Safra 2026</div>
+                <h1>Dashboard de Novilhas Precoces</h1>
+                <p>Indicadores interativos por fazenda, retiro e carimbo</p>
+            </div>
+        </div>
+        <div class="status" id="status"><span class="status-dot">●</span> Conectando à planilha…</div>
+    </div>
+</header>
+<main>
+    <div class="toolbar">
+        <label>Fazenda <select id="fazenda"><option value="">Todas</option></select></label>
+        <label>Retiro <select id="retiro"><option value="">Todos</option></select></label>
+        <label>Carimbo <select id="cb"><option value="">Todos</option></select></label>
+        <button id="reset">Limpar filtros</button>
+        <div class="hint">Clique nas barras ou no anel dos gráficos para filtrar!</div>
+    </div>
+    <div class="error" id="error"></div>
+
+    <section class="kpis">
+        <div class="kpi"><div class="label">Animais no lote</div><div class="value" id="kQtde">—</div><div class="sub">Soma da quantidade filtrada</div></div>
+        <div class="kpi"><div class="label">Peso médio atual</div><div class="value" id="kAtual">—</div><div class="sub">Média ponderada pela quantidade</div></div>
+        <div class="kpi"><div class="label">Ganho médio diário</div><div class="value" id="kGmd">—</div><div class="sub">GMD ponderado pela quantidade</div></div>
+        <div class="kpi"><div class="label">Evolução de peso</div><div class="value" id="kEvol">—</div><div class="sub">Peso atual menos peso de entrada</div></div>
+    </section>
+
+    <section class="grid">
+        <div class="panel">
+            <h2>Quantidade de animais por CB</h2>
+            <div class="desc">Número de cabeças por carimbo</div>
+            <div class="chartwrap"><canvas id="chartQtd"></canvas></div>
+            <div class="legend" id="legendQtd"></div>
+        </div>
+        <div class="panel">
+            <h2>Peso médio: entrada × atual</h2>
+            <div class="desc">Comparação de peso por CB (kg)</div>
+            <div class="chartwrap"><canvas id="chartPeso"></canvas></div>
+            <div class="legend" id="legendPeso"></div>
+        </div>
+        <div class="panel">
+            <h2>Ganho médio diário por CB</h2>
+            <div class="desc">GMD informado na planilha (kg/dia)</div>
+            <div class="chartwrap"><canvas id="chartGmd"></canvas></div>
+            <div class="legend" id="legendGmd"></div>
+        </div>
+        <div class="panel">
+            <h2>Distribuição por fazenda</h2>
+            <div class="desc">Participação na quantidade total de animais</div>
+            <div class="chartwrap"><canvas id="chartFaz"></canvas></div>
+            <div class="legend" id="legendFaz"></div>
+        </div>
+    </section>
+
+    <section class="panel tablepanel">
+        <h2>Detalhamento dos carimbos</h2>
+        <div class="desc">Os valores acompanham os filtros e seleções dos gráficos.</div>
+        <div class="tablewrap">
+            <table>
+                <thead><tr><th>Fazenda</th><th>Retiro</th><th>CB</th><th>Qtde</th><th>Peso entrada</th><th>Peso atual</th><th>GMD</th><th>Evolução</th></tr></thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+    </section>
+    <footer>Fonte: Aba “Precoces por carimbo” · Sistema Integrado Inteligente</footer>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt0 = n => Number(n||0).toLocaleString('pt-BR', {maximumFractionDigits:0});
+const fmt1 = n => n==null ? '—' : Number(n).toLocaleString('pt-BR', {minimumFractionDigits:1, maximumFractionDigits:1});
+const fmt3 = n => n==null ? '—' : Number(n).toLocaleString('pt-BR', {minimumFractionDigits:3, maximumFractionDigits:3});
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let allRows = [], lastStamp = '';
+const colors = ['#0033a0', '#5b9bd5', '#1a60ad', '#8faadc', '#4a90e2', '#a0c4f2', '#002060']; 
+
+function valid(r) { return Number(r.qtde) > 0; }
+function filtered() {
+    let f = $('fazenda').value, r = $('retiro').value, c = $('cb').value;
+    return allRows.filter(row => (!f || row.fazenda === f) && (!r || row.retiro === r) && (!c || String(row.cb) === c));
+}
+function weighted(rows, key) {
+    let a = rows.filter(r => r[key] != null && r.qtde > 0), q = a.reduce((s, r) => s + r.qtde, 0);
+    return q ? a.reduce((s, r) => s + r[key] * r.qtde, 0) / q : null;
+}
+
+function updateFilters() {
+    let f = $('fazenda').value, r = $('retiro').value, c = $('cb').value;
+    
+    let rowsF = allRows.filter(row => (!r || row.retiro === r) && (!c || String(row.cb) === c));
+    let rowsR = allRows.filter(row => (!f || row.fazenda === f) && (!c || String(row.cb) === c));
+    let rowsC = allRows.filter(row => (!f || row.fazenda === f) && (!r || row.retiro === r));
+
+    setOptions('fazenda', [...new Set(rowsF.map(x => x.fazenda).filter(Boolean))].sort(), 'Todas as fazendas');
+    $('fazenda').value = f; if(!$('fazenda').value) $('fazenda').value = '';
+
+    setOptions('retiro', [...new Set(rowsR.map(x => x.retiro).filter(Boolean))].sort(), 'Todos os retiros');
+    $('retiro').value = r; if(!$('retiro').value) $('retiro').value = '';
+
+    setOptions('cb', [...new Set(rowsC.map(x => x.cb).filter(v => v != null))].sort((a,b)=>a-b), 'Todos os carimbos');
+    $('cb').value = c; if(!$('cb').value) $('cb').value = '';
+
+    render();
+}
+
+function setOptions(id, values, label) {
+    $(id).innerHTML = `<option value="">${label}</option>` + values.map(v => `<option value="${esc(String(v))}">${esc(String(v))}</option>`).join('');
+}
+function legend(id, items) {
+    $(id).innerHTML = items.map((it, i) => `<span class="legitem"><i class="swatch" style="background:${it.color || colors[i%colors.length]}"></i>${esc(it.label)}</span>`).join('');
+}
+function prepCanvas(id) {
+    let c = $(id), rect = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    c.width = Math.max(1, Math.floor(rect.width * dpr));
+    c.height = Math.max(1, Math.floor(rect.height * dpr));
+    let x = c.getContext('2d'); x.scale(dpr, dpr);
+    return { c, x, w: rect.width, h: rect.height };
+}
+
+function drawBars(id, labels, series, unit='') {
+    let { c, x, w, h } = prepCanvas(id);
+    x.clearRect(0,0,w,h);
+    let L = 45, R = 10, T = 14, B = 37, ph = h - T - B, pw = w - L - R;
+    let max = Math.max(1, ...series.flatMap(s => s.values.filter(v => v != null))) * 1.14;
+    
+    x.font = '11px Segoe UI'; x.fillStyle = '#5a738e'; x.strokeStyle = '#e0e7ef';
+    for (let i = 0; i <= 4; i++) {
+        let y = T + ph * i / 4, v = max * (1 - i / 4);
+        x.beginPath(); x.moveTo(L, y); x.lineTo(w - R, y); x.stroke();
+        x.textAlign = 'right';
+        x.fillText(unit === 'kg/dia' ? v.toFixed(2) : Math.round(v).toLocaleString('pt-BR'), L - 7, y + 4);
+    }
+    
+    let group = pw / Math.max(labels.length, 1), barw = Math.min(28, group / (series.length + 1));
+    labels.forEach((lab, i) => {
+        series.forEach((s, j) => {
+            let v = s.values[i]; if (v == null) return;
+            let bh = v / max * ph, xx = L + i * group + group / 2 + (j - (series.length - 1) / 2) * barw - barw / 2, yy = T + ph - bh;
+            x.fillStyle = s.color || colors[j];
+            x.beginPath();
+            if (x.roundRect) x.roundRect(xx, yy, Math.max(2, barw - 3), bh, 3); else x.rect(xx, yy, Math.max(2, barw - 3), bh);
+            x.fill();
+        });
+        x.fillStyle = '#03173d'; x.textAlign = 'center'; 
+        x.fillText(String(lab), L + i * group + group / 2, T + ph + 20);
+    });
+
+    c.dataset.count = labels.length;
+    c.dataset.labels = JSON.stringify(labels);
+}
+
+function drawDonut(id, labels, values) {
+    let { c, x, w, h } = prepCanvas(id);
+    x.clearRect(0,0,w,h);
+    let total = values.reduce((a, b) => a + b, 0);
+    if (!total) { x.fillStyle = '#5a738e'; x.textAlign = 'center'; x.fillText('Nenhum dado filtrado', w/2, h/2); return; }
+    
+    let cx = w/2, cy = h/2 - 2, r = Math.min(w*.29, h*.38), ri = r*.58;
+    let currentAngle = 0, slices = [];
+    
+    values.forEach((v, i) => {
+        let sliceAngle = (v / total) * Math.PI * 2;
+        let end = currentAngle + sliceAngle;
+        
+        x.beginPath();
+        x.arc(cx, cy, r, currentAngle - Math.PI/2, end - Math.PI/2);
+        x.arc(cx, cy, ri, end - Math.PI/2, currentAngle - Math.PI/2, true);
+        x.closePath();
+        x.fillStyle = colors[i % colors.length]; x.fill();
+        
+        slices.push({ val: labels[i], start: currentAngle, end: end });
+        currentAngle = end;
+    });
+
+    x.textAlign = 'center'; x.fillStyle = '#002d84'; x.font = '800 24px Segoe UI';
+    x.fillText(fmt0(total), cx, cy + 3);
+    x.font = '600 12px Segoe UI'; x.fillStyle = '#5a738e'; x.fillText('animais', cx, cy + 20);
+
+    c.dataset.cx = cx; c.dataset.cy = cy; c.dataset.r = r; c.dataset.ri = ri;
+    c.dataset.slices = JSON.stringify(slices);
+}
+
+function handleBarClick(e) {
+    let c = e.currentTarget, L = 45, R = 10, pw = c.getBoundingClientRect().width - L - R;
+    if (e.offsetX >= L && e.offsetX <= c.getBoundingClientRect().width - R) {
+        let count = Number(c.dataset.count), group = pw / count;
+        let index = Math.floor((e.offsetX - L) / group);
+        let labels = JSON.parse(c.dataset.labels);
+        let clickedCB = labels[index];
+        if (clickedCB != null) {
+            $('cb').value = $('cb').value === String(clickedCB) ? '' : String(clickedCB);
+            updateFilters();
+        }
+    }
+}
+function handleDonutClick(e) {
+    let c = e.currentTarget;
+    let cx = Number(c.dataset.cx), cy = Number(c.dataset.cy), r = Number(c.dataset.r), ri = Number(c.dataset.ri);
+    let dx = e.offsetX - cx, dy = e.offsetY - cy, dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist >= ri && dist <= r) {
+        let clickAngle = Math.atan2(dy, dx) - (-Math.PI/2);
+        if (clickAngle < 0) clickAngle += 2 * Math.PI;
+        let slices = JSON.parse(c.dataset.slices);
+        let clicked = slices.find(s => clickAngle >= s.start && clickAngle <= s.end);
+        if (clicked) {
+            $('fazenda').value = $('fazenda').value === clicked.val ? '' : clicked.val;
+            updateFilters();
+        }
+    }
+}
+
+$('chartQtd').addEventListener('click', handleBarClick);
+$('chartPeso').addEventListener('click', handleBarClick);
+$('chartGmd').addEventListener('click', handleBarClick);
+$('chartFaz').addEventListener('click', handleDonutClick);
+
+function render() {
+    let rows = filtered(), active = rows.filter(valid), q = active.reduce((s, r) => s + r.qtde, 0);
+    let entry = weighted(active, 'entrada'), current = weighted(active, 'atual'), gmd = weighted(active, 'gmd');
+    
+    $('kQtde').textContent = fmt0(q);
+    $('kAtual').textContent = current != null ? fmt1(current) + ' kg' : '—';
+    $('kGmd').textContent = gmd != null ? fmt3(gmd) : '—';
+    $('kEvol').textContent = entry != null && current != null ? '+' + fmt1(current - entry) + ' kg' : '—';
+    if(entry != null && current != null && current < entry) $('kEvol').textContent = fmt1(current - entry) + ' kg';
+
+    let cbs = [...new Set(rows.map(r => r.cb).filter(v => v != null))].sort((a,b) => Number(a) - Number(b));
+    let qBy = cbs.map(cb => rows.filter(r => r.cb === cb).reduce((s, r) => s + (r.qtde||0), 0));
+    let ent = cbs.map(cb => weighted(rows.filter(r => r.cb === cb && valid(r)), 'entrada'));
+    let atu = cbs.map(cb => weighted(rows.filter(r => r.cb === cb && valid(r)), 'atual'));
+    let gm = cbs.map(cb => weighted(rows.filter(r => r.cb === cb && valid(r)), 'gmd'));
+
+    drawBars('chartQtd', cbs, [{label:'Quantidade', values:qBy, color: colors[0]}]);
+    legend('legendQtd', [{label:'Quantidade de animais', color: colors[0]}]);
+    
+    drawBars('chartPeso', cbs, [{label:'Entrada (kg)', values:ent, color: colors[3]}, {label:'Atual (kg)', values:atu, color: colors[0]}]);
+    legend('legendPeso', [{label:'Peso de entrada (kg)', color: colors[3]}, {label:'Peso atual (kg)', color: colors[0]}]);
+    
+    drawBars('chartGmd', cbs, [{label:'GMD', values:gm, color: '#e58e00'}], 'kg/dia');
+    legend('legendGmd', [{label:'GMD (kg/dia)', color: '#e58e00'}]);
+
+    let farms = [...new Set(rows.map(r => r.fazenda))].sort();
+    let fq = farms.map(f => rows.filter(r => r.fazenda === f).reduce((s, r) => s + (r.qtde||0), 0));
+    drawDonut('chartFaz', farms, fq);
+    legend('legendFaz', farms.map((f, i) => ({label: `${f} · ${fmt0(fq[i])} (${q ? Math.round(fq[i]/q*100) : 0}%)`, color: colors[i % colors.length]})));
+
+    $('tbody').innerHTML = rows.map(r => {
+        let evol = r.entrada != null && r.atual != null ? r.atual - r.entrada : null;
+        let evolHtml = evol != null ? `<span style="color:${evol > 0 ? 'var(--green)' : 'var(--red)'};font-weight:700">${evol > 0 ? '+':''}${fmt1(evol)}</span>` : '—';
+        return `<tr><td>${esc(r.fazenda)}</td><td>${esc(r.retiro)}</td><td><strong>${esc(r.cb)}</strong></td><td>${fmt0(r.qtde)}</td><td>${fmt1(r.entrada)}</td><td>${fmt1(r.atual)}</td><td>${fmt3(r.gmd)}</td><td>${evolHtml}</td></tr>`;
+    }).join('') || '<tr><td colspan="8" class="empty">Nenhum registro encontrado para essa seleção.</td></tr>';
+}
+
+async function load() {
+    try {
+        let res = await fetch('/data.json?t=' + Date.now(), {cache: 'no-store'});
+        let d = await res.json();
+        if (d.stamp !== lastStamp) {
+            lastStamp = d.stamp;
+            allRows = d.rows || [];
+            updateFilters();
+        }
+        $('status').innerHTML = `<span class="status-dot">●</span> Atualizado: ${d.updated || 'agora'}`;
+        $('error').style.display = 'none';
+    } catch(e) {
+        $('status').innerHTML = `<span class="status-dot" style="color:var(--red)">●</span> Aguardando...`;
+        $('error').style.display = 'block';
+        $('error').textContent = 'Conexão perdida. Verifique o arquivo PowerShell.';
+    }
+}
+
+['fazenda','retiro','cb'].forEach(id => $(id).addEventListener('change', updateFilters));
+$('reset').onclick = () => { ['fazenda','retiro','cb'].forEach(id => $(id).value = ''); updateFilters(); };
+window.addEventListener('resize', render);
+load(); setInterval(load, 2000);
+</script>
+</body>
+</html>
