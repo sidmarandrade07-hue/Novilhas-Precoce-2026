@@ -85,7 +85,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin: 24px 
                 <p>Indicadores interativos por fazenda, retiro e carimbo</p>
             </div>
         </div>
-        <div class="status" id="status"><span class="status-dot">●</span> Conectando à planilha…</div>
+        <div class="status" id="status"><span class="status-dot">●</span> Carregando dados…</div>
     </div>
 </header>
 <main>
@@ -334,7 +334,8 @@ function render() {
 
 async function load() {
     try {
-        let res = await fetch('/data.json?t=' + Date.now(), {cache: 'no-store'});
+        // Tenta carregar o data.json de forma estática/local compativel com o GitHub Pages
+        let res = await fetch('data.json?t=' + Date.now(), {cache: 'no-store'});
         let d = await res.json();
         if (d.stamp !== lastStamp) {
             lastStamp = d.stamp;
@@ -344,16 +345,16 @@ async function load() {
         $('status').innerHTML = `<span class="status-dot">●</span> Atualizado: ${d.updated || 'agora'}`;
         $('error').style.display = 'none';
     } catch(e) {
-        $('status').innerHTML = `<span class="status-dot" style="color:var(--red)">●</span> Aguardando...`;
+        $('status').innerHTML = `<span class="status-dot" style="color:var(--red)">●</span> Erro`;
         $('error').style.display = 'block';
-        $('error').textContent = 'Conexão perdida. Verifique o arquivo PowerShell.';
+        $('error').textContent = 'Não foi possível carregar o arquivo data.json.';
     }
 }
 
 ['fazenda','retiro','cb'].forEach(id => $(id).addEventListener('change', updateFilters));
 $('reset').onclick = () => { ['fazenda','retiro','cb'].forEach(id => $(id).value = ''); updateFilters(); };
 window.addEventListener('resize', render);
-load(); setInterval(load, 2000);
+load(); 
 </script>
 </body>
 </html>
