@@ -317,8 +317,9 @@ function render() {
     drawBars('chartPeso', cbs, [{label:'Entrada (kg)', values:ent, color: colors[3]}, {label:'Atual (kg)', values:atu, color: colors[0]}]);
     legend('legendPeso', [{label:'Peso de entrada (kg)', color: colors[3]}, {label:'Peso atual (kg)', color: colors[0]}]);
     
-    drawBars('chartGmd', cbs, [{label:'GMD', values:gm, color: '#e58e00'}], 'kg/dia');
-    legend('legendGmd', [{label:'GMD (kg/dia)', color: '#e58e00'}]);
+    // GMD agora com a cor padrão azul da paleta Jatobá
+    drawBars('chartGmd', cbs, [{label:'GMD', values:gm, color: colors[0]}], 'kg/dia');
+    legend('legendGmd', [{label:'GMD (kg/dia)', color: colors[0]}]);
 
     let farms = [...new Set(rows.map(r => r.fazenda))].sort();
     let fq = farms.map(f => rows.filter(r => r.fazenda === f).reduce((s, r) => s + (r.qtde||0), 0));
