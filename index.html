@@ -1,364 +1,676 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard | Novilhas Precoces 2026</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel de Novilhas Precoces · Safra 2026</title>
 <style>
-:root {
-    --bg: #eff3f8;
-    --ink: #03173d;
-    --muted: #5a738e;
-    --blue: #002d84;
-    --light-blue: #66a3ea;
-    --line: #cddced;
-    --card-bg: #ffffff;
-    --btn-bg: #004ea8;
-    --green: #00994d;
-    --red: #d32f2f;
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); font-family: "Segoe UI", Arial, sans-serif; color: var(--ink); }
-header { 
-    background: #021a4f; 
-    color: white; 
-    padding: 22px clamp(18px, 4vw, 52px) 20px; 
-    border-bottom: 4px solid var(--light-blue);
-}
-.head { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
-.eyebrow { font-size: 13px; letter-spacing: 1px; text-transform: uppercase; color: #a4c5f4; font-weight: 700; }
-h1 { margin: 6px 0 6px; font-size: clamp(22px, 3vw, 30px); font-weight: 800; }
-header p { margin: 0; color: #d0e1f9; font-size: 14px; }
-.status { font-size: 14px; font-weight: 600; border: 1px solid #1a3c7a; border-radius: 20px; padding: 8px 14px; background: #ffffff12; }
-.status-dot { color: #00e676; margin-right: 5px; font-size: 16px; }
-main { max-width: 1500px; margin: auto; padding: 22px clamp(14px, 3vw, 38px) 40px; }
-.toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
-select, button { font: inherit; border: 1px solid #b6cbea; border-radius: 9px; background: white; padding: 10px 12px; color: var(--ink); font-weight: 600; outline: none; }
-select:focus { border-color: var(--blue); }
-button { cursor: pointer; background: var(--btn-bg); color: #fff; border-color: var(--btn-bg); }
-button:hover { background: var(--blue); }
-.hint { font-size: 12px; color: var(--muted); margin-left: auto; }
-.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
-.kpi, .panel { 
-    background: var(--card-bg); 
-    border: 2px solid var(--line); 
-    border-radius: 12px; 
-    box-shadow: 0 4px 15px rgba(0, 30, 80, 0.03); 
-}
-.kpi { padding: 18px 20px; position: relative; overflow: hidden; }
-.kpi::after { content: ""; position: absolute; right: -18px; top: -20px; width: 78px; height: 78px; border-radius: 50%; background: #f0f5fb; }
-.kpi .label { font-size: 13px; color: var(--ink); font-weight: 700; position: relative; z-index: 1; }
-.kpi .value { font-size: clamp(26px, 2.5vw, 34px); color: var(--blue); font-weight: 800; margin: 8px 0 4px; position: relative; z-index: 1; }
-.kpi .sub { font-size: 12px; color: var(--muted); font-weight: 600; position: relative; z-index: 1; }
-.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.panel { padding: 18px 20px; min-width: 0; }
-.panel h2 { font-size: 17px; margin: 0 0 4px; color: var(--ink); font-weight: 800; }
-.desc { font-size: 13px; color: var(--muted); margin-bottom: 12px; font-weight: 500; }
-.chartwrap { height: 285px; position: relative; width: 100%; }
-canvas { width: 100%; height: 100%; display: block; cursor: pointer; }
-.legend { display: flex; gap: 10px 16px; flex-wrap: wrap; justify-content: center; align-items: center; padding: 11px 12px; margin-top: 8px; min-height: 42px; font-size: 13px; font-weight: 600; color: var(--ink); background: #f7f9fc; border: 1px solid var(--line); border-radius: 9px; }
-.legitem { display: inline-flex; align-items: center; gap: 7px; line-height: 1.4; }
-.swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: 0 0 12px; box-shadow: 0 0 0 1px #00000012; }
-.tablepanel { margin-top: 16px; }
-.tablewrap { overflow: auto; max-height: 340px; }
-table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
-th, td { text-align: right; padding: 11px 12px; border-bottom: 1px solid var(--line); }
-th { position: sticky; top: 0; background: #f7f9fc; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; z-index: 2; }
-th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
-.empty { padding: 50px; text-align: center; color: var(--muted); font-weight: 600; }
-footer { color: var(--muted); font-size: 12px; text-align: center; margin: 24px 0 0; font-weight: 600; }
-.error { background: #fff2ef; border: 1px solid #f0c4bc; color: #873b30; padding: 12px; border-radius: 10px; margin-bottom: 14px; display: none; }
-@media(max-width:900px){ .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid { grid-template-columns: 1fr; } .hint { margin-left: 0; } }
-@media(max-width:460px){ .kpis { grid-template-columns: 1fr 1fr; } .kpi { padding: 14px; } .kpi .value { font-size: 22px; } .panel { padding: 14px; } }
+  :root{
+    --navy:#06184a; --navy2:#0b2a6f; --azul:#0033a0; --azul2:#1a5fb4; --azul3:#5b9bd5; --azul4:#8faadc; --azul5:#dbe6f6;
+    --bg:#eef2f8; --card:#ffffff; --borda:#d6e0f0; --texto:#0d1b3e; --sub:#5b6b8c; --verde:#15803d; --vermelho:#c0262d;
+    --sombra:0 1px 2px rgba(6,24,74,.06),0 6px 20px rgba(6,24,74,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--texto);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;font-size:14px}
+  /* ---------- topo ---------- */
+  header{background:linear-gradient(120deg,var(--navy) 0%,var(--navy2) 70%,#123a8c 100%);color:#fff;padding:22px 28px 26px;position:relative;overflow:hidden;border-bottom:4px solid var(--azul3)}
+  header::after{content:"";position:absolute;right:-80px;top:-120px;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(91,155,213,.25),transparent 70%)}
+  .topo{display:flex;align-items:center;gap:20px;position:relative;z-index:1;flex-wrap:wrap}
+  .logo{width:84px;height:84px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 4px 14px rgba(0,0,0,.25);overflow:hidden}
+  .logo img{width:78px;height:78px;object-fit:contain}
+  .logo svg{width:52px;height:52px}
+  .titulos{flex:1;min-width:260px}
+  .eyebrow{font-size:12px;letter-spacing:.16em;font-weight:700;color:var(--azul4);text-transform:uppercase}
+  h1{margin:4px 0 4px;font-size:30px;font-weight:800;letter-spacing:-.01em}
+  .subt{color:#c9d6ef;font-size:14px}
+  .status{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+  .pill{display:inline-flex;align-items:center;gap:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);padding:9px 16px;border-radius:999px;font-weight:600;font-size:13.5px;white-space:nowrap}
+  .dot{width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.7);animation:pulso 2s infinite}
+  .dot.off{background:#f59e0b;animation:none}
+  .dot.err{background:#ef4444;animation:none}
+  @keyframes pulso{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}70%{box-shadow:0 0 0 9px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+  .meta{font-size:12px;color:#a9bbdf}
+  main{padding:20px 24px 40px;max-width:1680px;margin:0 auto}
+  /* ---------- filtros ---------- */
+  .filtros{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:12px 16px;box-shadow:var(--sombra);position:sticky;top:8px;z-index:20}
+  .campo{display:flex;align-items:center;gap:8px}
+  .campo label{font-size:13px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.06em}
+  select{appearance:none;-webkit-appearance:none;border:1px solid var(--borda);background:#f7f9fd url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%230033a0' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center;padding:9px 36px 9px 12px;border-radius:10px;font:inherit;font-size:14px;color:var(--texto);min-width:170px;cursor:pointer}
+  select:focus{outline:2px solid var(--azul3);outline-offset:1px}
+  select.ativo{border-color:var(--azul);background-color:var(--azul5);font-weight:600}
+  .btn{border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer;transition:.15s}
+  .btn.prim{background:var(--azul);color:#fff}.btn.prim:hover{background:var(--navy2)}
+  .btn.sec{background:var(--azul5);color:var(--azul)}.btn.sec:hover{background:#c8d8f1}
+  .btn:disabled{opacity:.45;cursor:default}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--azul);color:#fff;border-radius:999px;padding:5px 6px 5px 12px;font-size:12.5px;font-weight:600}
+  .chip b{opacity:.7;font-weight:600}
+  .chip button{border:0;background:rgba(255,255,255,.2);color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:13px;line-height:20px;padding:0}
+  .dica{font-size:12.5px;color:var(--sub);margin-left:auto}
+  /* ---------- KPIs ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin:18px 0}
+  .kpi{background:var(--card);border:1px solid var(--borda);border-radius:16px;padding:18px 20px;box-shadow:var(--sombra);position:relative;overflow:hidden}
+  .kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--azul)}
+  .kpi:nth-child(2)::before{background:var(--azul2)}.kpi:nth-child(3)::before{background:var(--azul3)}.kpi:nth-child(4)::before{background:var(--azul4)}.kpi:nth-child(5)::before{background:var(--navy2)}
+  .kpi .rot{font-size:12.5px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:8px}
+  .kpi .rot svg{width:18px;height:18px;color:var(--azul)}
+  .kpi .val{font-size:32px;font-weight:800;color:var(--azul);margin:8px 0 4px;letter-spacing:-.02em;white-space:nowrap}
+  .kpi .val small{font-size:16px;font-weight:700;color:var(--azul2)}
+  .kpi .det{font-size:12.5px;color:var(--sub)}
+  .pos{color:var(--verde)!important}.neg{color:var(--vermelho)!important}
+  /* ---------- cards ---------- */
+  .grade{display:grid;gap:16px;margin-bottom:16px}
+  .g2{grid-template-columns:1.35fr 1fr}.g2b{grid-template-columns:1fr 1fr}
+  .card{background:var(--card);border:1px solid var(--borda);border-radius:16px;padding:18px 20px 16px;box-shadow:var(--sombra);min-width:0}
+  .card h2{margin:0;font-size:17px;font-weight:800;color:var(--navy)}
+  .card .cs{color:var(--sub);font-size:13px;margin:3px 0 10px}
+  .cab{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .chart{width:100%;position:relative}
+  .chart svg{display:block;width:100%;overflow:visible}
+  .legenda{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;background:#f6f8fc;border:1px solid #e3eaf6;border-radius:10px;padding:9px 12px;margin-top:8px;font-size:13px}
+  .legenda span{display:inline-flex;align-items:center;gap:7px;cursor:pointer;user-select:none;padding:2px 4px;border-radius:6px}
+  .legenda span:hover{background:#e7eef9}
+  .legenda span.apagado{opacity:.35}
+  .legenda i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .barra{cursor:pointer;transition:opacity .2s}
+  .barra.apagado{opacity:.22}
+  .cresce{transform-box:fill-box;transform-origin:bottom;animation:cresce .55s cubic-bezier(.2,.8,.2,1)}
+  .cresceH{transform-box:fill-box;transform-origin:left;animation:cresceH .55s cubic-bezier(.2,.8,.2,1)}
+  @keyframes cresce{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+  @keyframes cresceH{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  .eixo text{fill:#6b7a99;font-size:11.5px}
+  .grid line{stroke:#e6ecf5}
+  .rotulo{fill:#41506f;font-size:11px;font-weight:600}
+  .seg{display:inline-flex;background:#eef3fb;border-radius:9px;padding:3px}
+  .seg button{border:0;background:none;padding:6px 10px;border-radius:7px;font:inherit;font-size:12.5px;font-weight:600;color:var(--sub);cursor:pointer}
+  .seg button.on{background:#fff;color:var(--azul);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  /* mapa de calor */
+  .heat{display:grid;gap:4px;font-size:12px}
+  .heat .h{font-weight:700;color:var(--sub);text-align:center;padding:4px 0}
+  .heat .r{font-weight:600;color:var(--texto);display:flex;align-items:center;padding-right:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .heat .c{border-radius:8px;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .12s,opacity .2s;border:2px solid transparent}
+  .heat .c:hover{transform:scale(1.04)}
+  .heat .c b{font-size:13.5px}.heat .c small{font-size:10.5px;opacity:.85}
+  .heat .c.vazio{background:#f3f5f9;color:#b3bdd0;cursor:default}
+  .heat .c.sel{border-color:var(--navy)}
+  .heat .c.apagado{opacity:.3}
+  .escala{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--sub);margin-top:10px;justify-content:flex-end}
+  .escala div{width:160px;height:10px;border-radius:5px;background:linear-gradient(90deg,#e3ecf9,#5b9bd5,#0033a0,#06184a)}
+  /* tabela */
+  .tabwrap{max-height:520px;overflow:auto;border-radius:10px;border:1px solid #e3eaf6}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{position:sticky;top:0;background:#f2f6fc;color:#34446a;text-transform:uppercase;font-size:11.5px;letter-spacing:.06em;text-align:right;padding:12px 14px;cursor:pointer;user-select:none;white-space:nowrap;border-bottom:1px solid var(--borda)}
+  th:nth-child(-n+2){text-align:left}
+  th .s{opacity:.35;margin-left:4px}th.ord .s{opacity:1;color:var(--azul)}
+  td{padding:11px 14px;border-bottom:1px solid #edf1f8;text-align:right;font-variant-numeric:tabular-nums}
+  td:nth-child(-n+2){text-align:left}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:#f6f9fe}
+  tbody tr.zero{color:#a3aec4}
+  tbody tr.sel{background:#e7effb}
+  tfoot td{position:sticky;bottom:0;background:#eaf0fa;font-weight:800;color:var(--navy);border-top:2px solid var(--azul4)}
+  .gmdbar{display:inline-block;height:6px;border-radius:3px;background:var(--azul3);vertical-align:middle;margin-right:8px}
+  /* tooltip / toast / aviso */
+  #tip{position:fixed;pointer-events:none;background:var(--navy);color:#fff;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.45;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;transition:opacity .12s;z-index:100;max-width:280px}
+  #tip b{color:#fff}#tip .tl{color:var(--azul4);font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  #toast{position:fixed;right:22px;bottom:22px;background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-weight:600;transform:translateY(120px);opacity:0;transition:transform .35s,opacity .35s;z-index:100;display:flex;gap:10px;align-items:center}
+  #toast.on{transform:none;opacity:1}
+  #aviso{display:none;background:#fff4e5;border:1px solid #f5c27a;color:#7a4a00;padding:12px 16px;border-radius:12px;margin-bottom:14px}
+  .vazio-msg{padding:60px 0;text-align:center;color:var(--sub)}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:10px 0 26px}
+  @media (max-width:1300px){.kpis{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:1000px){.g2,.g2b{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.status{align-items:flex-start}}
 </style>
 </head>
 <body>
 <header>
-    <div class="head">
-        <div style="display: flex; align-items: center; gap: 18px;">
-            <div style="background: #ffffff; padding: 6px 14px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
-                <img src="Logo.png" alt="Logo Jatobá" style="height: 55px; width: auto; object-fit: contain;">
-            </div>
-            <div>
-                <div class="eyebrow">Gestão Pecuária · Safra 2026</div>
-                <h1>Dashboard de Novilhas Precoces</h1>
-                <p>Indicadores interativos por fazenda, retiro e carimbo</p>
-            </div>
-        </div>
-        <div class="status" id="status"><span class="status-dot">●</span> Carregando dados…</div>
+  <div class="topo">
+    <div class="logo" id="logo">
+      <img src="data:image/png;base64,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" alt="Jatobá">
+      <svg id="logoFallback" style="display:none" viewBox="0 0 48 48" fill="none"><rect x="6" y="26" width="8" height="16" rx="2" fill="#5b9bd5"/><rect x="20" y="16" width="8" height="26" rx="2" fill="#1a5fb4"/><rect x="34" y="8" width="8" height="34" rx="2" fill="#0033a0"/></svg>
     </div>
+    <div class="titulos">
+      <div class="eyebrow">Gestão Pecuária · Safra 2026</div>
+      <h1>Painel de Novilhas Precoces</h1>
+      <div class="subt">Desempenho por fazenda, retiro e carimbo (CB) — atualização automática a partir do Excel</div>
+    </div>
+    <div class="status">
+      <div class="pill"><span class="dot off" id="dot"></span><span id="stTxt">Conectando…</span></div>
+      <div class="meta" id="stMeta"></div>
+    </div>
+  </div>
 </header>
+
 <main>
-    <div class="toolbar">
-        <label>Fazenda <select id="fazenda"><option value="">Todas</option></select></label>
-        <label>Retiro <select id="retiro"><option value="">Todos</option></select></label>
-        <label>Carimbo <select id="cb"><option value="">Todos</option></select></label>
-        <button id="reset">Limpar filtros</button>
-        <div class="hint">Clique nas barras ou no anel dos gráficos para filtrar!</div>
+  <div id="aviso"></div>
+
+  <div class="filtros">
+    <div class="campo"><label for="fFaz">Fazenda</label><select id="fFaz"></select></div>
+    <div class="campo"><label for="fRet">Retiro</label><select id="fRet"></select></div>
+    <div class="campo"><label for="fCb">Carimbo</label><select id="fCb"></select></div>
+    <button class="btn prim" id="limpar">Limpar filtros</button>
+    <div class="chips" id="chips"></div>
+    <div class="dica">Clique em barras, fatias, células ou linhas para filtrar · clique de novo para desmarcar</div>
+  </div>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="grade g2">
+    <div class="card">
+      <div class="cab"><div><h2>Animais por carimbo</h2><div class="cs">Cabeças por CB, empilhadas por fazenda</div></div></div>
+      <div class="chart" id="chQtde"></div>
+      <div class="legenda" id="lgQtde"></div>
     </div>
-    <div class="error" id="error"></div>
+    <div class="card">
+      <div class="cab"><div><h2>Participação por fazenda</h2><div class="cs">Distribuição da quantidade total de animais</div></div></div>
+      <div class="chart" id="chDonut"></div>
+      <div class="legenda" id="lgDonut"></div>
+    </div>
+  </section>
 
-    <section class="kpis">
-        <div class="kpi"><div class="label">Animais no lote</div><div class="value" id="kQtde">—</div><div class="sub">Soma da quantidade filtrada</div></div>
-        <div class="kpi"><div class="label">Peso médio atual</div><div class="value" id="kAtual">—</div><div class="sub">Média ponderada pela quantidade</div></div>
-        <div class="kpi"><div class="label">Ganho médio diário</div><div class="value" id="kGmd">—</div><div class="sub">GMD ponderado pela quantidade</div></div>
-        <div class="kpi"><div class="label">Evolução de peso</div><div class="value" id="kEvol">—</div><div class="sub">Peso atual menos peso de entrada</div></div>
-    </section>
+  <section class="grade g2b">
+    <div class="card">
+      <div class="cab"><div><h2>Peso médio: entrada × atual</h2><div class="cs">Média ponderada por cabeça em cada CB (kg)</div></div></div>
+      <div class="chart" id="chPeso"></div>
+      <div class="legenda"><span><i style="background:var(--azul4)"></i>Peso de entrada</span><span><i style="background:var(--azul)"></i>Peso atual</span><span><i style="background:var(--verde)"></i>Evolução (kg)</span></div>
+    </div>
+    <div class="card">
+      <div class="cab"><div><h2>Ganho médio diário por CB</h2><div class="cs">GMD ponderado (kg/dia) · linha tracejada = média do filtro</div></div></div>
+      <div class="chart" id="chGmd"></div>
+      <div class="legenda"><span><i style="background:var(--azul)"></i>GMD (kg/dia)</span><span><i style="background:#f59e0b;height:3px"></i>Média geral</span></div>
+    </div>
+  </section>
 
-    <section class="grid">
-        <div class="panel">
-            <h2>Quantidade de animais por CB</h2>
-            <div class="desc">Número de cabeças por carimbo</div>
-            <div class="chartwrap"><canvas id="chartQtd"></canvas></div>
-            <div class="legend" id="legendQtd"></div>
-        </div>
-        <div class="panel">
-            <h2>Peso médio: entrada × atual</h2>
-            <div class="desc">Comparação de peso por CB (kg)</div>
-            <div class="chartwrap"><canvas id="chartPeso"></canvas></div>
-            <div class="legend" id="legendPeso"></div>
-        </div>
-        <div class="panel">
-            <h2>Ganho médio diário por CB</h2>
-            <div class="desc">GMD informado na planilha (kg/dia)</div>
-            <div class="chartwrap"><canvas id="chartGmd"></canvas></div>
-            <div class="legend" id="legendGmd"></div>
-        </div>
-        <div class="panel">
-            <h2>Distribuição por fazenda</h2>
-            <div class="desc">Participação na quantidade total de animais</div>
-            <div class="chartwrap"><canvas id="chartFaz"></canvas></div>
-            <div class="legend" id="legendFaz"></div>
-        </div>
-    </section>
+  <section class="grade g2b">
+    <div class="card">
+      <div class="cab">
+        <div><h2>Ranking de retiros</h2><div class="cs" id="csRank">Ordenado por GMD ponderado</div></div>
+        <div class="seg" id="segRank"><button data-m="gmd" class="on">GMD</button><button data-m="evol">Evolução</button><button data-m="qtde">Animais</button></div>
+      </div>
+      <div class="chart" id="chRank"></div>
+    </div>
+    <div class="card">
+      <div class="cab"><div><h2>Mapa de calor · retiro × carimbo</h2><div class="cs">Cor = GMD (kg/dia) · número menor = cabeças</div></div></div>
+      <div id="chHeat"></div>
+      <div class="escala">GMD menor <div></div> maior</div>
+    </div>
+  </section>
 
-    <section class="panel tablepanel">
-        <h2>Detalhamento dos carimbos</h2>
-        <div class="desc">Os valores acompanham os filtros e seleções dos gráficos.</div>
-        <div class="tablewrap">
-            <table>
-                <thead><tr><th>Fazenda</th><th>Retiro</th><th>CB</th><th>Qtde</th><th>Peso entrada</th><th>Peso atual</th><th>GMD</th><th>Evolução</th></tr></thead>
-                <tbody id="tbody"></tbody>
-            </table>
-        </div>
-    </section>
-    <footer>Fonte: Aba “Precoces por carimbo” · Sistema Integrado Inteligente</footer>
+  <section class="card">
+    <div class="cab">
+      <div><h2>Detalhamento dos carimbos</h2><div class="cs" id="csTab">Os valores acompanham os filtros e as seleções dos gráficos.</div></div>
+      <button class="btn sec" id="csv">Exportar CSV</button>
+    </div>
+    <div class="tabwrap"><table id="tab"></table></div>
+  </section>
 </main>
+<footer id="rodape">Fonte: planilha Excel · aba “Precoces por carimbo”</footer>
+<div id="tip"></div>
+<div id="toast"><span>✓</span><span id="toastTxt">Dados atualizados</span></div>
 
 <script>
-const $ = id => document.getElementById(id);
-const fmt0 = n => Number(n||0).toLocaleString('pt-BR', {maximumFractionDigits:0});
-const fmt1 = n => n==null ? '—' : Number(n).toLocaleString('pt-BR', {minimumFractionDigits:1, maximumFractionDigits:1});
-const fmt3 = n => n==null ? '—' : Number(n).toLocaleString('pt-BR', {minimumFractionDigits:3, maximumFractionDigits:3});
-const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* ================== utilidades ================== */
+const $ = s => document.querySelector(s);
+const nf = (v, d = 0) => (v == null || isNaN(v)) ? '—' : v.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const sinal = (v, d = 1) => (v == null || isNaN(v)) ? '—' : (v > 0 ? '+' : '') + nf(v, d);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const NS = 'http://www.w3.org/2000/svg';
+const CORES_FAZ = ['#0033a0', '#5b9bd5', '#1a5fb4', '#8faadc', '#06184a', '#2f80d8', '#a9c4ea', '#0b2a6f'];
+const corFaz = {};
 
-let allRows = [], lastStamp = '';
-const colors = ['#0033a0', '#5b9bd5', '#1a60ad', '#8faadc', '#4a90e2', '#a0c4f2', '#002060']; 
+/* ================== estado ================== */
+let RAW = [], ultimoJson = '', primeiraCarga = true, animar = true, rankModo = 'gmd';
+const F = { fazenda: new Set(), retiro: new Set(), cb: new Set() };
+const chave = {
+  fazenda: r => r.fazenda,
+  retiro: r => r.fazenda + ' · ' + r.retiro,
+  cb: r => String(r.cb)
+};
+const nomeDim = { fazenda: 'Fazenda', retiro: 'Retiro', cb: 'CB' };
+let ordTab = { col: null, asc: true };
 
-function valid(r) { return Number(r.qtde) > 0; }
-function filtered() {
-    let f = $('fazenda').value, r = $('retiro').value, c = $('cb').value;
-    return allRows.filter(row => (!f || row.fazenda === f) && (!r || row.retiro === r) && (!c || String(row.cb) === c));
+function filtrar(exceto = []) {
+  return RAW.filter(r => Object.keys(F).every(d => exceto.includes(d) || F[d].size === 0 || F[d].has(chave[d](r))));
 }
-function weighted(rows, key) {
-    let a = rows.filter(r => r[key] != null && r.qtde > 0), q = a.reduce((s, r) => s + r.qtde, 0);
-    return q ? a.reduce((s, r) => s + r[key] * r.qtde, 0) / q : null;
+function agregar(rows) {
+  let q = 0, qe = 0, se = 0, qa = 0, sa = 0, qg = 0, sg = 0, qb = 0, ganho = 0;
+  for (const r of rows) {
+    const n = r.qtde || 0; if (n <= 0) continue;
+    q += n;
+    if (r.pesoEntrada != null) { qe += n; se += n * r.pesoEntrada; }
+    if (r.pesoAtual != null) { qa += n; sa += n * r.pesoAtual; }
+    if (r.gmd != null) { qg += n; sg += n * r.gmd; }
+    if (r.pesoEntrada != null && r.pesoAtual != null) { qb += n; ganho += n * (r.pesoAtual - r.pesoEntrada); }
+  }
+  const e = qe ? se / qe : null, a = qa ? sa / qa : null;
+  return { q, e, a, g: qg ? sg / qg : null, evol: qb ? ganho / qb : null, ganho: qb ? ganho : null };
+}
+function alternar(dim, valor) {
+  F[dim].has(valor) ? F[dim].delete(valor) : F[dim].add(valor);
+  animar = false; render();
+}
+const listaCbs = () => [...new Set(RAW.map(r => String(r.cb)))].sort((a, b) => (+a - +b) || a.localeCompare(b));
+const listaFaz = () => [...new Set(RAW.map(r => r.fazenda))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+/* ================== tooltip ================== */
+const tip = $('#tip');
+function mostrarTip(ev, html) {
+  tip.innerHTML = html; tip.style.opacity = 1;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
+  tip.style.left = x + 'px'; tip.style.top = y + 'px';
+}
+const esconderTip = () => tip.style.opacity = 0;
+function ligarTip(el, fn) {
+  el.addEventListener('mousemove', ev => mostrarTip(ev, fn()));
+  el.addEventListener('mouseleave', esconderTip);
 }
 
-function updateFilters() {
-    let f = $('fazenda').value, r = $('retiro').value, c = $('cb').value;
-    
-    let rowsF = allRows.filter(row => (!r || row.retiro === r) && (!c || String(row.cb) === c));
-    let rowsR = allRows.filter(row => (!f || row.fazenda === f) && (!c || String(row.cb) === c));
-    let rowsC = allRows.filter(row => (!f || row.fazenda === f) && (!r || row.retiro === r));
-
-    setOptions('fazenda', [...new Set(rowsF.map(x => x.fazenda).filter(Boolean))].sort(), 'Todas as fazendas');
-    $('fazenda').value = f; if(!$('fazenda').value) $('fazenda').value = '';
-
-    setOptions('retiro', [...new Set(rowsR.map(x => x.retiro).filter(Boolean))].sort(), 'Todos os retiros');
-    $('retiro').value = r; if(!$('retiro').value) $('retiro').value = '';
-
-    setOptions('cb', [...new Set(rowsC.map(x => x.cb).filter(v => v != null))].sort((a,b)=>a-b), 'Todos os carimbos');
-    $('cb').value = c; if(!$('cb').value) $('cb').value = '';
-
-    render();
+/* ================== SVG helpers ================== */
+function svgEl(tag, attrs = {}, pai) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (pai) pai.appendChild(e);
+  return e;
+}
+function maxBonito(v) {
+  if (!v || v <= 0) return 1;
+  const p = Math.pow(10, Math.floor(Math.log10(v))), n = v / p;
+  const m = n <= 1 ? 1 : n <= 1.2 ? 1.2 : n <= 1.5 ? 1.5 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 3 ? 3 : n <= 4 ? 4 : n <= 5 ? 5 : n <= 6 ? 6 : n <= 8 ? 8 : 10;
+  return m * p;
 }
 
-function setOptions(id, values, label) {
-    $(id).innerHTML = `<option value="">${label}</option>` + values.map(v => `<option value="${esc(String(v))}">${esc(String(v))}</option>`).join('');
-}
-function legend(id, items) {
-    $(id).innerHTML = items.map((it, i) => `<span class="legitem"><i class="swatch" style="background:${it.color || colors[i%colors.length]}"></i>${esc(it.label)}</span>`).join('');
-}
-function prepCanvas(id) {
-    let c = $(id), rect = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
-    c.width = Math.max(1, Math.floor(rect.width * dpr));
-    c.height = Math.max(1, Math.floor(rect.height * dpr));
-    let x = c.getContext('2d'); x.scale(dpr, dpr);
-    return { c, x, w: rect.width, h: rect.height };
-}
-
-function drawBars(id, labels, series, unit='') {
-    let { c, x, w, h } = prepCanvas(id);
-    x.clearRect(0,0,w,h);
-    let L = 45, R = 10, T = 22, B = 37, ph = h - T - B, pw = w - L - R;
-    let max = Math.max(1, ...series.flatMap(s => s.values.filter(v => v != null))) * 1.18;
-    
-    x.font = '11px Segoe UI'; x.fillStyle = '#5a738e'; x.strokeStyle = '#e0e7ef';
-    for (let i = 0; i <= 4; i++) {
-        let y = T + ph * i / 4, v = max * (1 - i / 4);
-        x.beginPath(); x.moveTo(L, y); x.lineTo(w - R, y); x.stroke();
-        x.textAlign = 'right';
-        x.fillText(unit === 'kg/dia' ? v.toFixed(2) : Math.round(v).toLocaleString('pt-BR'), L - 7, y + 4);
+/* Gráfico de barras vertical (agrupado ou empilhado) */
+function barrasV(el, { cats, series, empilhado = false, fmt = v => nf(v), fmtEixo, sel, onClick, tipFn, linhaRef, altura = 300, extraRotulo }) {
+  el.innerHTML = '';
+  const W = Math.max(el.clientWidth, 320), H = altura, m = { l: 46, r: 14, t: 26, b: 34 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, height: H }, el);
+  let maxV = 0;
+  cats.forEach((c, i) => {
+    if (empilhado) maxV = Math.max(maxV, series.reduce((s, se) => s + (se.values[i] || 0), 0));
+    else series.forEach(se => maxV = Math.max(maxV, se.values[i] || 0));
+  });
+  if (linhaRef && linhaRef.value) maxV = Math.max(maxV, linhaRef.value);
+  const top = maxBonito(maxV * 1.12), y = v => m.t + ih - (v / top) * ih;
+  const g = svgEl('g', { class: 'grid' }, svg), ex = svgEl('g', { class: 'eixo' }, svg);
+  for (let k = 0; k <= 4; k++) {
+    const v = top * k / 4, yy = y(v);
+    svgEl('line', { x1: m.l, x2: W - m.r, y1: yy, y2: yy }, g);
+    const t = svgEl('text', { x: m.l - 8, y: yy + 4, 'text-anchor': 'end' }, ex); t.textContent = (fmtEixo || fmt)(v);
+  }
+  const band = iw / cats.length;
+  cats.forEach((c, i) => {
+    const cx = m.l + band * i + band / 2;
+    const apag = sel && sel.size && !sel.has(c);
+    const grupo = svgEl('g', { class: 'barra' + (apag ? ' apagado' : '') }, svg);
+    if (empilhado) {
+      const bw = Math.min(54, band * 0.58); let acc = 0;
+      series.forEach(se => {
+        const v = se.values[i] || 0; if (v <= 0) return;
+        const r = svgEl('rect', { x: cx - bw / 2, y: y(acc + v), width: bw, height: Math.max(0, y(acc) - y(acc + v)), fill: se.color, class: animar ? 'cresce' : '' }, grupo);
+        acc += v;
+      });
+      const tot = series.reduce((s, se) => s + (se.values[i] || 0), 0);
+      const t = svgEl('text', { x: cx, y: y(tot) - 7, 'text-anchor': 'middle', class: 'rotulo' }, grupo); t.textContent = fmt(tot);
+    } else {
+      const n = series.length, bw = Math.min(30, band * 0.72 / n), gap = 4;
+      const total = n * bw + (n - 1) * gap;
+      series.forEach((se, k) => {
+        const v = se.values[i]; if (v == null) return;
+        const x = cx - total / 2 + k * (bw + gap);
+        svgEl('rect', { x, y: y(Math.max(v, 0)), width: bw, height: Math.max(0, y(0) - y(Math.max(v, 0))), rx: 3, fill: se.color, class: animar ? 'cresce' : '' }, grupo);
+        const t = svgEl('text', { x: x + bw / 2, y: y(Math.max(v, 0)) - 6, 'text-anchor': 'middle', class: 'rotulo' }, grupo); t.textContent = fmt(v);
+      });
+      if (extraRotulo) {
+        const txt = extraRotulo(i);
+        if (txt) { const t = svgEl('text', { x: cx, y: m.t - 10, 'text-anchor': 'middle', class: 'rotulo', fill: txt.cor, style: `fill:${txt.cor}` }, grupo); t.textContent = txt.t; }
+      }
     }
-    
-    let group = pw / Math.max(labels.length, 1), barw = Math.min(28, group / (series.length + 1));
-    labels.forEach((lab, i) => {
-        series.forEach((s, j) => {
-            let v = s.values[i]; if (v == null) return;
-            let bh = v / max * ph, xx = L + i * group + group / 2 + (j - (series.length - 1) / 2) * barw - barw / 2, yy = T + ph - bh;
-            x.fillStyle = s.color || colors[j];
-            x.beginPath();
-            if (x.roundRect) x.roundRect(xx, yy, Math.max(2, barw - 3), bh, 3); else x.rect(xx, yy, Math.max(2, barw - 3), bh);
-            x.fill();
-
-            // Rótulo de valor suave em cima de cada barra
-            x.fillStyle = '#5a738e'; x.font = '10px Segoe UI'; x.textAlign = 'center';
-            let txt = unit === 'kg/dia' ? Number(v).toFixed(2) : Math.round(v).toLocaleString('pt-BR');
-            x.fillText(txt, xx + (barw - 3) / 2, yy - 5);
-        });
-        x.fillStyle = '#03173d'; x.font = '11px Segoe UI'; x.textAlign = 'center'; 
-        x.fillText(String(lab), L + i * group + group / 2, T + ph + 20);
-    });
-
-    c.dataset.count = labels.length;
-    c.dataset.labels = JSON.stringify(labels);
+    const lab = svgEl('text', { x: cx, y: H - m.b + 20, 'text-anchor': 'middle' }, ex); lab.textContent = c;
+    const hit = svgEl('rect', { x: m.l + band * i, y: m.t, width: band, height: ih + 24, fill: 'transparent', style: 'cursor:pointer' }, svg);
+    if (onClick) hit.addEventListener('click', () => { esconderTip(); onClick(c); });
+    if (tipFn) ligarTip(hit, () => tipFn(c, i));
+  });
+  if (linhaRef && linhaRef.value != null) {
+    const yy = y(linhaRef.value);
+    svgEl('line', { x1: m.l, x2: W - m.r, y1: yy, y2: yy, stroke: '#f59e0b', 'stroke-width': 2, 'stroke-dasharray': '6 5' }, svg);
+    const t = svgEl('text', { x: W - m.r, y: yy - 6, 'text-anchor': 'end', style: 'fill:#b45309;font-size:11px;font-weight:700' }, svg); t.textContent = linhaRef.label;
+  }
 }
 
-function drawDonut(id, labels, values) {
-    let { c, x, w, h } = prepCanvas(id);
-    x.clearRect(0,0,w,h);
-    let total = values.reduce((a, b) => a + b, 0);
-    if (!total) { x.fillStyle = '#5a738e'; x.textAlign = 'center'; x.fillText('Nenhum dado filtrado', w/2, h/2); return; }
-    
-    let cx = w/2, cy = h/2 - 2, r = Math.min(w*.29, h*.38), ri = r*.58;
-    let currentAngle = 0, slices = [];
-    
-    values.forEach((v, i) => {
-        let sliceAngle = (v / total) * Math.PI * 2;
-        let end = currentAngle + sliceAngle;
-        
-        x.beginPath();
-        x.arc(cx, cy, r, currentAngle - Math.PI/2, end - Math.PI/2);
-        x.arc(cx, cy, ri, end - Math.PI/2, currentAngle - Math.PI/2, true);
-        x.closePath();
-        x.fillStyle = colors[i % colors.length]; x.fill();
-        
-        slices.push({ val: labels[i], start: currentAngle, end: end });
-        currentAngle = end;
-    });
-
-    x.textAlign = 'center'; x.fillStyle = '#002d84'; x.font = '800 24px Segoe UI';
-    x.fillText(fmt0(total), cx, cy + 3);
-    x.font = '600 12px Segoe UI'; x.fillStyle = '#5a738e'; x.fillText('animais', cx, cy + 20);
-
-    c.dataset.cx = cx; c.dataset.cy = cy; c.dataset.r = r; c.dataset.ri = ri;
-    c.dataset.slices = JSON.stringify(slices);
-}
-
-function handleBarClick(e) {
-    let c = e.currentTarget, L = 45, R = 10, pw = c.getBoundingClientRect().width - L - R;
-    if (e.offsetX >= L && e.offsetX <= c.getBoundingClientRect().width - R) {
-        let count = Number(c.dataset.count), group = pw / count;
-        let index = Math.floor((e.offsetX - L) / group);
-        let labels = JSON.parse(c.dataset.labels);
-        let clickedCB = labels[index];
-        if (clickedCB != null) {
-            $('cb').value = $('cb').value === String(clickedCB) ? '' : String(clickedCB);
-            updateFilters();
-        }
+/* Rosca */
+function rosca(el, itens, centro, sub) {
+  el.innerHTML = '';
+  const W = Math.max(el.clientWidth, 280), H = 300, R = Math.min(W, H) / 2 - 18, r0 = R * 0.6, cx = W / 2, cy = H / 2;
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, height: H }, el);
+  const tot = itens.reduce((s, i) => s + i.value, 0);
+  if (!tot) { el.innerHTML = '<div class="vazio-msg">Sem animais para os filtros atuais</div>'; return; }
+  let ang = -Math.PI / 2;
+  itens.forEach(it => {
+    if (it.value <= 0) return;
+    const frac = it.value / tot, a1 = ang, a2 = ang + frac * Math.PI * 2 - (frac < 1 ? 0.012 : 0.0001);
+    ang += frac * Math.PI * 2;
+    const ex = it.sel ? 8 : 0, mid = (a1 + a2) / 2, dx = Math.cos(mid) * ex, dy = Math.sin(mid) * ex;
+    const p = (rr, a) => [cx + dx + rr * Math.cos(a), cy + dy + rr * Math.sin(a)];
+    const big = (a2 - a1) > Math.PI ? 1 : 0;
+    const [x1, y1] = p(R, a1), [x2, y2] = p(R, a2), [x3, y3] = p(r0, a2), [x4, y4] = p(r0, a1);
+    const d = frac >= 0.9999
+      ? `M${cx - R},${cy} a${R},${R} 0 1,0 ${2 * R},0 a${R},${R} 0 1,0 ${-2 * R},0 M${cx - r0},${cy} a${r0},${r0} 0 1,1 ${2 * r0},0 a${r0},${r0} 0 1,1 ${-2 * r0},0`
+      : `M${x1},${y1} A${R},${R} 0 ${big} 1 ${x2},${y2} L${x3},${y3} A${r0},${r0} 0 ${big} 0 ${x4},${y4} Z`;
+    const path = svgEl('path', { d, fill: it.color, 'fill-rule': 'evenodd', class: 'barra' + (it.apagado ? ' apagado' : '') }, svg);
+    path.addEventListener('click', () => { esconderTip(); alternar('fazenda', it.key); });
+    ligarTip(path, () => `<div class="tl">Fazenda</div><b>${esc(it.label)}</b><br>${nf(it.value)} animais · ${nf(frac * 100, 1)}%`);
+    if (frac > 0.06) {
+      const [lx, ly] = p((R + r0) / 2, mid);
+      const t = svgEl('text', { x: lx, y: ly + 4, 'text-anchor': 'middle', style: 'fill:#fff;font-size:12px;font-weight:700;pointer-events:none' }, svg);
+      t.textContent = nf(frac * 100, 0) + '%';
     }
-}
-function handleDonutClick(e) {
-    let c = e.currentTarget;
-    let cx = Number(c.dataset.cx), cy = Number(c.dataset.cy), r = Number(c.dataset.r), ri = Number(c.dataset.ri);
-    let dx = e.offsetX - cx, dy = e.offsetY - cy, dist = Math.sqrt(dx*dx + dy*dy);
-    if (dist >= ri && dist <= r) {
-        let clickAngle = Math.atan2(dy, dx) - (-Math.PI/2);
-        if (clickAngle < 0) clickAngle += 2 * Math.PI;
-        let slices = JSON.parse(c.dataset.slices);
-        let clicked = slices.find(s => clickAngle >= s.start && clickAngle <= s.end);
-        if (clicked) {
-            $('fazenda').value = $('fazenda').value === clicked.val ? '' : clicked.val;
-            updateFilters();
-        }
-    }
+  });
+  const t1 = svgEl('text', { x: cx, y: cy + 4, 'text-anchor': 'middle', style: 'font-size:30px;font-weight:800;fill:#0033a0' }, svg); t1.textContent = centro;
+  const t2 = svgEl('text', { x: cx, y: cy + 24, 'text-anchor': 'middle', style: 'font-size:12.5px;fill:#5b6b8c;font-weight:600' }, svg); t2.textContent = sub;
 }
 
-$('chartQtd').addEventListener('click', handleBarClick);
-$('chartPeso').addEventListener('click', handleBarClick);
-$('chartGmd').addEventListener('click', handleBarClick);
-$('chartFaz').addEventListener('click', handleDonutClick);
+/* Barras horizontais (ranking) */
+function barrasH(el, itens, { fmt, sel, onClick, tipFn }) {
+  el.innerHTML = '';
+  if (!itens.length) { el.innerHTML = '<div class="vazio-msg">Sem dados para os filtros atuais</div>'; return; }
+  const W = Math.max(el.clientWidth, 320), lh = 40, m = { l: 160, r: 70, t: 6, b: 6 };
+  const H = m.t + m.b + itens.length * lh, iw = W - m.l - m.r;
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, height: H }, el);
+  const vals = itens.map(i => i.value || 0), maxV = Math.max(...vals.map(Math.abs), 0.0001), minV = Math.min(0, ...vals);
+  const span = maxV - minV, x = v => m.l + ((v - minV) / span) * iw;
+  itens.forEach((it, i) => {
+    const yy = m.t + i * lh, apag = sel && sel.size && !sel.has(it.key);
+    const g = svgEl('g', { class: 'barra' + (apag ? ' apagado' : '') }, svg);
+    svgEl('rect', { x: m.l, y: yy + 8, width: iw, height: lh - 16, rx: 6, fill: '#f1f5fb' }, g);
+    const v = it.value || 0, x0 = x(Math.min(0, v)), x1 = x(Math.max(0, v));
+    svgEl('rect', { x: x0, y: yy + 8, width: Math.max(2, x1 - x0), height: lh - 16, rx: 6, fill: it.color || '#0033a0', class: animar ? 'cresceH' : '' }, g);
+    const l1 = svgEl('text', { x: m.l - 10, y: yy + lh / 2 - 2, 'text-anchor': 'end', style: 'font-size:12.5px;font-weight:700;fill:#0d1b3e' }, g); l1.textContent = it.label;
+    const l2 = svgEl('text', { x: m.l - 10, y: yy + lh / 2 + 12, 'text-anchor': 'end', style: 'font-size:10.5px;fill:#6b7a99' }, g); l2.textContent = it.sub;
+    const vv = svgEl('text', { x: x1 + 8, y: yy + lh / 2 + 4, style: 'font-size:12.5px;font-weight:800;fill:#0033a0' }, g); vv.textContent = fmt(it.value);
+    const hit = svgEl('rect', { x: 0, y: yy, width: W, height: lh, fill: 'transparent', style: 'cursor:pointer' }, svg);
+    hit.addEventListener('click', () => { esconderTip(); onClick(it.key); });
+    ligarTip(hit, () => tipFn(it));
+  });
+}
 
+/* cor do mapa de calor */
+function corEscala(t) {
+  const stops = [[227, 236, 249], [91, 155, 213], [0, 51, 160], [6, 24, 74]];
+  t = Math.max(0, Math.min(1, t)) * (stops.length - 1);
+  const i = Math.min(Math.floor(t), stops.length - 2), f = t - i;
+  const c = stops[i].map((v, k) => Math.round(v + (stops[i + 1][k] - v) * f));
+  return { bg: `rgb(${c})`, fg: t > 1.1 ? '#fff' : '#0d1b3e' };
+}
+
+/* ================== renderização ================== */
 function render() {
-    let rows = filtered(), active = rows.filter(valid), q = active.reduce((s, r) => s + r.qtde, 0);
-    let entry = weighted(active, 'entrada'), current = weighted(active, 'atual'), gmd = weighted(active, 'gmd');
-    
-    $('kQtde').textContent = fmt0(q);
-    $('kAtual').textContent = current != null ? fmt1(current) + ' kg' : '—';
-    $('kGmd').textContent = gmd != null ? fmt3(gmd) : '—';
-    $('kEvol').textContent = entry != null && current != null ? '+' + fmt1(current - entry) + ' kg' : '—';
-    if(entry != null && current != null && current < entry) $('kEvol').textContent = fmt1(current - entry) + ' kg';
-
-    let cbs = [...new Set(rows.map(r => r.cb).filter(v => v != null))].sort((a,b) => Number(a) - Number(b));
-    let qBy = cbs.map(cb => rows.filter(r => r.cb === cb).reduce((s, r) => s + (r.qtde||0), 0));
-    let ent = cbs.map(cb => weighted(rows.filter(r => r.cb === cb && valid(r)), 'entrada'));
-    let atu = cbs.map(cb => weighted(rows.filter(r => r.cb === cb && valid(r)), 'atual'));
-    let gm = cbs.map(cb => weighted(rows.filter(r => r.cb === cb && valid(r)), 'gmd'));
-
-    drawBars('chartQtd', cbs, [{label:'Quantidade', values:qBy, color: colors[0]}]);
-    legend('legendQtd', [{label:'Quantidade de animais', color: colors[0]}]);
-    
-    drawBars('chartPeso', cbs, [{label:'Entrada (kg)', values:ent, color: colors[3]}, {label:'Atual (kg)', values:atu, color: colors[0]}]);
-    legend('legendPeso', [{label:'Peso de entrada (kg)', color: colors[3]}, {label:'Peso atual (kg)', color: colors[0]}]);
-    
-    drawBars('chartGmd', cbs, [{label:'GMD', values:gm, color: colors[0]}], 'kg/dia');
-    legend('legendGmd', [{label:'GMD (kg/dia)', color: colors[0]}]);
-
-    let farms = [...new Set(rows.map(r => r.fazenda))].sort();
-    let fq = farms.map(f => rows.filter(r => r.fazenda === f).reduce((s, r) => s + (r.qtde||0), 0));
-    drawDonut('chartFaz', farms, fq);
-    legend('legendFaz', farms.map((f, i) => ({label: `${f} · ${fmt0(fq[i])} (${q ? Math.round(fq[i]/q*100) : 0}%)`, color: colors[i % colors.length]})));
-
-    $('tbody').innerHTML = rows.map(r => {
-        let evol = r.entrada != null && r.atual != null ? r.atual - r.entrada : null;
-        let evolHtml = evol != null ? `<span style="color:${evol > 0 ? 'var(--green)' : 'var(--red)'};font-weight:700">${evol > 0 ? '+':''}${fmt1(evol)}</span>` : '—';
-        return `<tr><td>${esc(r.fazenda)}</td><td>${esc(r.retiro)}</td><td><strong>${esc(r.cb)}</strong></td><td>${fmt0(r.qtde)}</td><td>${fmt1(r.entrada)}</td><td>${fmt1(r.atual)}</td><td>${fmt3(r.gmd)}</td><td>${evolHtml}</td></tr>`;
-    }).join('') || '<tr><td colspan="8" class="empty">Nenhum registro encontrado para essa seleção.</td></tr>';
+  if (!RAW.length) return;
+  const cbs = listaCbs(), fazs = listaFaz();
+  fazs.forEach((f, i) => corFaz[f] = corFaz[f] || CORES_FAZ[i % CORES_FAZ.length]);
+  renderFiltros(cbs, fazs);
+  renderKpis();
+  renderQtde(cbs, fazs);
+  renderDonut(fazs);
+  renderPeso(cbs);
+  renderGmd(cbs);
+  renderRank();
+  renderHeat(cbs);
+  renderTabela();
+  animar = true;
 }
 
-async function load() {
-    try {
-        let res = await fetch('data.json?t=' + Date.now(), {cache: 'no-store'});
-        let d = await res.json();
-        if (d.stamp !== lastStamp) {
-            lastStamp = d.stamp;
-            allRows = d.rows || [];
-            updateFilters();
-        }
-        $('status').innerHTML = `<span class="status-dot">●</span> Atualizado: ${d.updated || 'agora'}`;
-        $('error').style.display = 'none';
-    } catch(e) {
-        $('status').innerHTML = `<span class="status-dot" style="color:var(--red)">●</span> Erro`;
-        $('error').style.display = 'block';
-        $('error').textContent = 'Não foi possível carregar o arquivo data.json.';
-    }
+function preencherSelect(sel, dim, opcoes, rotuloTodos) {
+  const atual = F[dim];
+  let html = `<option value="">${rotuloTodos}</option>`;
+  if (atual.size > 1) html += `<option value="__multi" selected>${atual.size} selecionados</option>`;
+  html += opcoes.map(o => `<option value="${esc(o.v)}" ${atual.size === 1 && atual.has(o.v) ? 'selected' : ''}>${esc(o.t)}</option>`).join('');
+  sel.innerHTML = html;
+  sel.classList.toggle('ativo', atual.size > 0);
+}
+function renderFiltros(cbs, fazs) {
+  preencherSelect($('#fFaz'), 'fazenda', fazs.map(f => ({ v: f, t: f })), 'Todas as fazendas');
+  const retiros = [...new Set(RAW.filter(r => !F.fazenda.size || F.fazenda.has(r.fazenda)).map(chave.retiro))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  preencherSelect($('#fRet'), 'retiro', retiros.map(r => ({ v: r, t: F.fazenda.size === 1 ? r.split(' · ')[1] : r })), 'Todos os retiros');
+  preencherSelect($('#fCb'), 'cb', cbs.map(c => ({ v: c, t: 'CB ' + c })), 'Todos os carimbos');
+  const chips = [];
+  for (const d of Object.keys(F)) for (const v of F[d]) chips.push(`<span class="chip"><b>${nomeDim[d]}:</b> ${esc(v)} <button data-d="${d}" data-v="${esc(v)}" title="Remover">×</button></span>`);
+  $('#chips').innerHTML = chips.join('');
+  $('#limpar').disabled = !chips.length;
 }
 
-['fazenda','retiro','cb'].forEach(id => $(id).addEventListener('change', updateFilters));
-$('reset').onclick = () => { ['fazenda','retiro','cb'].forEach(id => $(id).value = ''); updateFilters(); };
-window.addEventListener('resize', render);
-load(); 
+function renderKpis() {
+  const a = agregar(filtrar()), tot = agregar(RAW);
+  const ic = {
+    cab: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7c2-2 4-1 5 0h6c1-1 3-2 5 0l-2 3v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4v-5z"/><circle cx="10" cy="13" r=".8" fill="currentColor"/><circle cx="14" cy="13" r=".8" fill="currentColor"/></svg>',
+    peso: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8h12l2 12H4z"/><circle cx="12" cy="5" r="2"/></svg>',
+    gmd: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>',
+    evo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+    tot: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="12" width="4" height="8"/><rect x="10" y="7" width="4" height="13"/><rect x="17" y="3" width="4" height="17"/></svg>'
+  };
+  const pct = tot.q ? a.q / tot.q * 100 : 0;
+  $('#kpis').innerHTML = `
+    <div class="kpi"><div class="rot">${ic.cab}Animais no lote</div><div class="val">${nf(a.q)}</div><div class="det">${a.q === tot.q ? 'Total geral da planilha' : nf(pct, 1) + '% do total de ' + nf(tot.q)}</div></div>
+    <div class="kpi"><div class="rot">${ic.peso}Peso médio atual</div><div class="val">${nf(a.a, 1)} <small>kg</small></div><div class="det">Entrada: ${nf(a.e, 1)} kg · ponderado por cabeça</div></div>
+    <div class="kpi"><div class="rot">${ic.gmd}Ganho médio diário</div><div class="val">${nf(a.g, 3)} <small>kg/dia</small></div><div class="det">${a.q === tot.q ? 'GMD ponderado pela quantidade' : 'Geral: ' + nf(tot.g, 3) + ' kg/dia'}</div></div>
+    <div class="kpi"><div class="rot">${ic.evo}Evolução de peso</div><div class="val ${a.evol >= 0 ? '' : 'neg'}">${sinal(a.evol)} <small>kg/cab</small></div><div class="det">Peso atual − peso de entrada</div></div>
+    <div class="kpi"><div class="rot">${ic.tot}Ganho total do lote</div><div class="val">${nf(a.ganho != null ? a.ganho / 1000 : null, 1)} <small>t</small></div><div class="det">${nf(a.ganho)} kg somados (todas as cabeças)</div></div>`;
+}
+
+function renderQtde(cbs, fazs) {
+  const rows = filtrar(['cb']);
+  const fazVis = fazs.filter(f => !F.fazenda.size || F.fazenda.has(f));
+  const series = fazVis.map(f => ({ name: f, color: corFaz[f], values: cbs.map(c => rows.filter(r => r.fazenda === f && String(r.cb) === c).reduce((s, r) => s + (r.qtde || 0), 0)) }));
+  barrasV($('#chQtde'), {
+    cats: cbs, series, empilhado: true, sel: F.cb, onClick: c => alternar('cb', c),
+    tipFn: (c, i) => `<div class="tl">CB ${esc(c)}</div>` + series.filter(s => s.values[i]).map(s => `<span style="color:${s.color === '#0033a0' || s.color === '#06184a' ? '#8faadc' : s.color}">■</span> ${esc(s.name)}: <b>${nf(s.values[i])}</b>`).join('<br>') + `<br>Total: <b>${nf(series.reduce((t, s) => t + s.values[i], 0))}</b> animais`
+  });
+  $('#lgQtde').innerHTML = fazs.map(f => `<span data-f="${esc(f)}" class="${F.fazenda.size && !F.fazenda.has(f) ? 'apagado' : ''}"><i style="background:${corFaz[f]}"></i>${esc(f)}</span>`).join('');
+}
+
+function renderDonut(fazs) {
+  const rows = filtrar(['fazenda']);
+  const itens = fazs.map(f => ({ key: f, label: f, color: corFaz[f], value: rows.filter(r => r.fazenda === f).reduce((s, r) => s + (r.qtde || 0), 0), sel: F.fazenda.has(f), apagado: F.fazenda.size && !F.fazenda.has(f) }));
+  const tot = itens.reduce((s, i) => s + i.value, 0), selTot = F.fazenda.size ? itens.filter(i => i.sel).reduce((s, i) => s + i.value, 0) : tot;
+  rosca($('#chDonut'), itens, nf(selTot), F.fazenda.size ? 'animais selecionados' : 'animais');
+  $('#lgDonut').innerHTML = itens.map(i => `<span data-f="${esc(i.key)}" class="${i.apagado ? 'apagado' : ''}"><i style="background:${i.color}"></i>${esc(i.label)} · <b>${nf(i.value)}</b> (${tot ? nf(i.value / tot * 100, 0) : 0}%)</span>`).join('');
+}
+
+function porCb(cbs, rows) { return cbs.map(c => agregar(rows.filter(r => String(r.cb) === c))); }
+
+function renderPeso(cbs) {
+  const ag = porCb(cbs, filtrar(['cb']));
+  barrasV($('#chPeso'), {
+    cats: cbs, sel: F.cb, onClick: c => alternar('cb', c), fmt: v => nf(v, 0), altura: 310,
+    series: [{ name: 'Entrada', color: '#8faadc', values: ag.map(a => a.e) }, { name: 'Atual', color: '#0033a0', values: ag.map(a => a.a) }],
+    extraRotulo: i => ag[i].evol == null ? null : { t: sinal(ag[i].evol) + ' kg', cor: ag[i].evol >= 0 ? '#15803d' : '#c0262d' },
+    tipFn: (c, i) => { const a = ag[i]; return `<div class="tl">CB ${esc(c)}</div>` + (a.q ? `Entrada: <b>${nf(a.e, 1)} kg</b><br>Atual: <b>${nf(a.a, 1)} kg</b><br>Evolução: <b>${sinal(a.evol)} kg</b><br>${nf(a.q)} animais` : 'Sem animais'); }
+  });
+}
+
+function renderGmd(cbs) {
+  const rows = filtrar(['cb']), ag = porCb(cbs, rows), geral = agregar(rows);
+  barrasV($('#chGmd'), {
+    cats: cbs, sel: F.cb, onClick: c => alternar('cb', c), fmt: v => nf(v, 2), altura: 310,
+    series: [{ name: 'GMD', color: '#0033a0', values: ag.map(a => a.g) }],
+    linhaRef: geral.g != null ? { value: geral.g, label: 'Média ' + nf(geral.g, 3) } : null,
+    tipFn: (c, i) => { const a = ag[i]; return `<div class="tl">CB ${esc(c)}</div>` + (a.q ? `GMD: <b>${nf(a.g, 3)} kg/dia</b><br>${a.g != null && geral.g ? (a.g >= geral.g ? '▲ acima' : '▼ abaixo') + ' da média do filtro' : ''}<br>${nf(a.q)} animais` : 'Sem animais'); }
+  });
+}
+
+function renderRank() {
+  const rows = filtrar(['retiro']);
+  const grupos = {};
+  rows.forEach(r => (grupos[chave.retiro(r)] = grupos[chave.retiro(r)] || { faz: r.fazenda, ret: r.retiro, rows: [] }).rows.push(r));
+  const met = { gmd: ['g', v => nf(v, 3), 'Ordenado por GMD ponderado (kg/dia)'], evol: ['evol', v => sinal(v) + ' kg', 'Ordenado pela evolução média de peso (kg/cabeça)'], qtde: ['q', v => nf(v), 'Ordenado pela quantidade de animais'] }[rankModo];
+  $('#csRank').textContent = met[2];
+  const itens = Object.entries(grupos).map(([k, gr]) => { const a = agregar(gr.rows); return { key: k, label: gr.ret, sub: gr.faz + ' · ' + nf(a.q) + ' cab.', value: a[met[0]], a, color: corFaz[gr.faz] }; })
+    .filter(i => i.a.q > 0).sort((x, y) => (y.value ?? -1e9) - (x.value ?? -1e9));
+  barrasH($('#chRank'), itens, {
+    fmt: met[1], sel: F.retiro, onClick: k => alternar('retiro', k),
+    tipFn: it => `<div class="tl">${esc(it.sub.split(' · ')[0])}</div><b>${esc(it.label)}</b><br>Animais: <b>${nf(it.a.q)}</b><br>GMD: <b>${nf(it.a.g, 3)} kg/dia</b><br>Entrada → atual: <b>${nf(it.a.e, 1)} → ${nf(it.a.a, 1)} kg</b><br>Evolução: <b>${sinal(it.a.evol)} kg</b>`
+  });
+}
+
+function renderHeat(cbs) {
+  const rows = filtrar(['retiro', 'cb']);
+  const retiros = [...new Set(rows.map(chave.retiro))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const el = $('#chHeat');
+  if (!retiros.length) { el.innerHTML = '<div class="vazio-msg">Sem dados para os filtros atuais</div>'; return; }
+  const cel = {}; let gmin = Infinity, gmax = -Infinity;
+  retiros.forEach(rt => cbs.forEach(c => {
+    const a = agregar(rows.filter(r => chave.retiro(r) === rt && String(r.cb) === c));
+    cel[rt + '|' + c] = a;
+    if (a.q && a.g != null) { gmin = Math.min(gmin, a.g); gmax = Math.max(gmax, a.g); }
+  }));
+  const span = (gmax - gmin) || 1;
+  let html = `<div class="heat" style="grid-template-columns:minmax(120px,1.3fr) repeat(${cbs.length},1fr)"><div></div>` + cbs.map(c => `<div class="h">CB ${esc(c)}</div>`).join('');
+  retiros.forEach(rt => {
+    html += `<div class="r" title="${esc(rt)}">${esc(rt)}</div>`;
+    cbs.forEach(c => {
+      const a = cel[rt + '|' + c];
+      if (!a.q) { html += `<div class="c vazio">—</div>`; return; }
+      const { bg, fg } = corEscala(a.g == null ? 0 : (a.g - gmin) / span);
+      const ativo = (!F.retiro.size || F.retiro.has(rt)) && (!F.cb.size || F.cb.has(c));
+      const sel = F.retiro.has(rt) && F.cb.has(c);
+      html += `<div class="c${ativo ? '' : ' apagado'}${sel ? ' sel' : ''}" style="background:${bg};color:${fg}" data-rt="${esc(rt)}" data-cb="${esc(c)}"><b>${nf(a.g, 2)}</b><small>${nf(a.q)} cab.</small></div>`;
+    });
+  });
+  el.innerHTML = html + '</div>';
+  el.querySelectorAll('.c[data-rt]').forEach(d => {
+    const a = cel[d.dataset.rt + '|' + d.dataset.cb];
+    ligarTip(d, () => `<div class="tl">${esc(d.dataset.rt)} · CB ${esc(d.dataset.cb)}</div>GMD: <b>${nf(a.g, 3)} kg/dia</b><br>Animais: <b>${nf(a.q)}</b><br>Peso: <b>${nf(a.e, 1)} → ${nf(a.a, 1)} kg</b><br>Evolução: <b>${sinal(a.evol)} kg</b>`);
+    d.addEventListener('click', () => {
+      esconderTip();
+      const rt = d.dataset.rt, c = d.dataset.cb, mesma = F.retiro.size === 1 && F.retiro.has(rt) && F.cb.size === 1 && F.cb.has(c);
+      F.retiro.clear(); F.cb.clear();
+      if (!mesma) { F.retiro.add(rt); F.cb.add(c); }
+      animar = false; render();
+    });
+  });
+}
+
+const COLS = [
+  { k: 'fazenda', t: 'Fazenda' }, { k: 'retiro', t: 'Retiro' }, { k: 'cb', t: 'CB' }, { k: 'qtde', t: 'Qtde' },
+  { k: 'pesoEntrada', t: 'Peso entrada' }, { k: 'pesoAtual', t: 'Peso atual' }, { k: 'gmd', t: 'GMD' }, { k: 'evol', t: 'Evolução' }
+];
+function renderTabela() {
+  let rows = filtrar().map(r => ({ ...r, evol: (r.pesoAtual != null && r.pesoEntrada != null) ? r.pesoAtual - r.pesoEntrada : null }));
+  if (ordTab.col) {
+    const k = ordTab.col, s = ordTab.asc ? 1 : -1;
+    rows.sort((a, b) => { const x = a[k], y = b[k]; if (x == null) return 1; if (y == null) return -1; return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR', { numeric: true })) * s; });
+  }
+  const maxG = Math.max(...rows.map(r => r.gmd || 0), 0.001);
+  const a = agregar(rows);
+  const th = COLS.map(c => `<th data-k="${c.k}" class="${ordTab.col === c.k ? 'ord' : ''}">${c.t}<span class="s">${ordTab.col === c.k ? (ordTab.asc ? '▲' : '▼') : '↕'}</span></th>`).join('');
+  const tb = rows.map(r => {
+    const sel = F.retiro.has(chave.retiro(r)) && F.cb.has(String(r.cb));
+    return `<tr class="${!r.qtde ? 'zero' : ''}${sel ? ' sel' : ''}" data-rt="${esc(chave.retiro(r))}" data-cb="${esc(r.cb)}">
+      <td>${esc(r.fazenda)}</td><td>${esc(r.retiro)}</td><td><b>${esc(r.cb)}</b></td><td>${nf(r.qtde)}</td>
+      <td>${r.qtde ? nf(r.pesoEntrada, 1) : '—'}</td><td>${r.qtde ? nf(r.pesoAtual, 1) : '—'}</td>
+      <td>${r.qtde && r.gmd != null ? `<span class="gmdbar" style="width:${Math.max(2, (r.gmd / maxG) * 60)}px"></span>` + nf(r.gmd, 3) : '—'}</td>
+      <td class="${r.evol > 0 ? 'pos' : r.evol < 0 ? 'neg' : ''}"><b>${r.qtde ? sinal(r.evol) : '—'}</b></td></tr>`;
+  }).join('');
+  const tf = `<tr><td>Total / média ponderada</td><td>${rows.filter(r => r.qtde).length} lotes</td><td></td><td>${nf(a.q)}</td><td>${nf(a.e, 1)}</td><td>${nf(a.a, 1)}</td><td>${nf(a.g, 3)}</td><td class="${a.evol >= 0 ? 'pos' : 'neg'}">${sinal(a.evol)}</td></tr>`;
+  $('#tab').innerHTML = `<thead><tr>${th}</tr></thead><tbody>${tb || '<tr><td colspan="8" class="vazio-msg">Nenhuma linha para os filtros atuais</td></tr>'}</tbody><tfoot>${tf}</tfoot>`;
+  $('#csTab').textContent = `${rows.length} linhas exibidas · os valores acompanham os filtros e as seleções dos gráficos.`;
+}
+
+/* ================== eventos ================== */
+function ligarSelect(id, dim) {
+  $(id).addEventListener('change', e => {
+    const v = e.target.value; if (v === '__multi') return;
+    F[dim].clear(); if (v) F[dim].add(v);
+    if (dim === 'fazenda') [...F.retiro].forEach(rt => { if (F.fazenda.size && !F.fazenda.has(rt.split(' · ')[0])) F.retiro.delete(rt); });
+    animar = false; render();
+  });
+}
+ligarSelect('#fFaz', 'fazenda'); ligarSelect('#fRet', 'retiro'); ligarSelect('#fCb', 'cb');
+$('#limpar').onclick = () => { Object.values(F).forEach(s => s.clear()); animar = false; render(); };
+$('#chips').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { F[b.dataset.d].delete(b.dataset.v); animar = false; render(); } });
+['#lgQtde', '#lgDonut'].forEach(id => $(id).addEventListener('click', e => { const s = e.target.closest('span[data-f]'); if (s) alternar('fazenda', s.dataset.f); }));
+$('#segRank').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; rankModo = b.dataset.m; $('#segRank').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); renderRank(); });
+$('#tab').addEventListener('click', e => {
+  const h = e.target.closest('th');
+  if (h) { const k = h.dataset.k; ordTab = { col: k, asc: ordTab.col === k ? !ordTab.asc : true }; renderTabela(); return; }
+  const tr = e.target.closest('tbody tr[data-rt]');
+  if (tr) {
+    const rt = tr.dataset.rt, c = tr.dataset.cb, mesma = F.retiro.size === 1 && F.retiro.has(rt) && F.cb.size === 1 && F.cb.has(c);
+    F.retiro.clear(); F.cb.clear(); if (!mesma) { F.retiro.add(rt); F.cb.add(c); }
+    animar = false; render();
+  }
+});
+$('#csv').onclick = () => {
+  const rows = filtrar();
+  const d = v => v == null ? '' : String(v).replace('.', ',');
+  const linhas = [['Fazenda', 'Retiro', 'CB', 'Qtde', 'Peso entrada', 'Peso atual', 'GMD', 'Evolucao'].join(';')]
+    .concat(rows.map(r => [r.fazenda, r.retiro, r.cb, r.qtde, d(r.pesoEntrada?.toFixed(2)), d(r.pesoAtual?.toFixed(2)), d(r.gmd?.toFixed(4)), d(r.pesoAtual != null && r.pesoEntrada != null ? (r.pesoAtual - r.pesoEntrada).toFixed(2) : null)].join(';')));
+  const blob = new Blob(['﻿' + linhas.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'precoces_filtrado.csv'; a.click();
+};
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { animar = false; render(); }, 150); });
+
+/* ================== atualização automática ================== */
+function toast(msg) { $('#toastTxt').textContent = msg; $('#toast').classList.add('on'); setTimeout(() => $('#toast').classList.remove('on'), 3200); }
+function status(estado, txt, meta) { $('#dot').className = 'dot ' + estado; $('#stTxt').textContent = txt; $('#stMeta').textContent = meta || ''; }
+
+/* Aceita dados vindos do PowerShell (números) ou do Power Automate (textos, com vírgula ou ponto) */
+function num(v) {
+  if (v == null) return null;
+  if (typeof v === 'number') return isFinite(v) ? v : null;
+  let t = String(v).trim().replace(/\s/g, '');
+  if (t === '' || t === '-' || /^#/.test(t)) return null;
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');
+  const n = parseFloat(t);
+  return isNaN(n) ? null : n;
+}
+function normalizar(linhas) {
+  if (typeof linhas === 'string') { try { linhas = JSON.parse(linhas); } catch (e) { linhas = []; } }
+  return (linhas || []).map(r => {
+    const cbN = num(r.cb);
+    return {
+      fazenda: String(r.fazenda ?? '').trim(),
+      retiro: String(r.retiro ?? '').trim(),
+      cb: cbN != null && Number.isInteger(cbN) ? cbN : String(r.cb ?? '').trim(),
+      qtde: num(r.qtde) ?? 0,
+      pesoEntrada: num(r.pesoEntrada), pesoAtual: num(r.pesoAtual), gmd: num(r.gmd)
+    };
+  }).filter(r => r.fazenda);
+}
+const NA_WEB = /^https?:/.test(location.protocol);
+const INTERVALO = NA_WEB ? 60000 : 3000;
+
+window.receberDados = function (d) {
+  window.__ok = true;
+  if (d.erro) { $('#aviso').style.display = 'block'; $('#aviso').textContent = '⚠ ' + d.erro; status('err', 'Erro ao ler a planilha', d.atualizado); return; }
+  $('#aviso').style.display = 'none';
+  const json = JSON.stringify(d.linhas);
+  status('', 'Atualizado: ' + d.modificado, `${d.arquivo} · aba “${d.aba}” · lido às ${d.atualizado.split(' ')[1]}`);
+  $('#rodape').textContent = `Fonte: ${d.arquivo} · aba “${d.aba}” · ${normalizar(d.linhas).length} linhas · verificação automática a cada ${NA_WEB ? '1 min' : '3 s'}`;
+  if (json === ultimoJson) return;
+  ultimoJson = json;
+  RAW = normalizar(d.linhas);
+  // remove seleções que deixaram de existir
+  for (const dim of Object.keys(F)) { const ok = new Set(RAW.map(chave[dim])); [...F[dim]].forEach(v => { if (!ok.has(v)) F[dim].delete(v); }); }
+  animar = true; render();
+  if (!primeiraCarga) toast('Planilha salva — painel atualizado');
+  primeiraCarga = false;
+};
+
+function buscar() {
+  window.__ok = false;
+  const s = document.createElement('script');
+  s.src = 'dados.js?t=' + Date.now();
+  s.onload = () => { s.remove(); };
+  s.onerror = () => { s.remove(); if (NA_WEB) status('off', 'Sem conexão com os dados', 'Nova tentativa em 1 min'); else status('err', 'dados.js não encontrado', 'Execute Iniciar_Dashboard.bat'); };
+  document.body.appendChild(s);
+}
+buscar();
+setInterval(buscar, INTERVALO);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) buscar(); });
 </script>
 </body>
 </html>
