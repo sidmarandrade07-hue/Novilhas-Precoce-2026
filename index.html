@@ -629,14 +629,20 @@ function num(v) {
 }
 function normalizar(linhas) {
   if (typeof linhas === 'string') { try { linhas = JSON.parse(linhas); } catch (e) { linhas = []; } }
-  return (linhas || []).map(r => {
-    const cbN = num(r.cb);
+  // nomes de campo sem diferenciar maiúsculas/minúsculas, acentos, espaços ou "_" (Fazenda = fazenda, PesoEntrada = Peso_Entrada)
+  const chaveN = k => String(k).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const pegar = (o, ...nomes) => { for (const n of nomes) if (o[n] !== undefined) return o[n]; return undefined; };
+  return (linhas || []).map(orig => {
+    const r = {}; for (const k in orig) r[chaveN(k)] = orig[k];
+    const cbV = pegar(r, 'cb', 'carimbo'), cbN = num(cbV);
     return {
-      fazenda: String(r.fazenda ?? '').trim(),
-      retiro: String(r.retiro ?? '').trim(),
-      cb: cbN != null && Number.isInteger(cbN) ? cbN : String(r.cb ?? '').trim(),
-      qtde: num(r.qtde) ?? 0,
-      pesoEntrada: num(r.pesoEntrada), pesoAtual: num(r.pesoAtual), gmd: num(r.gmd)
+      fazenda: String(pegar(r, 'fazenda') ?? '').trim(),
+      retiro: String(pegar(r, 'retiro') ?? '').trim(),
+      cb: cbN != null && Number.isInteger(cbN) ? cbN : String(cbV ?? '').trim(),
+      qtde: num(pegar(r, 'qtde', 'quantidade')) ?? 0,
+      pesoEntrada: num(pegar(r, 'pesoentrada', 'mediapesoentrada')),
+      pesoAtual: num(pegar(r, 'pesoatual', 'mediapesoatual')),
+      gmd: num(pegar(r, 'gmd'))
     };
   }).filter(r => r.fazenda);
 }
