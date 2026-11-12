@@ -170,12 +170,12 @@
 
   <section class="grade g2b">
     <div class="card">
-      <div class="cab"><div><h2>Peso médio: entrada × atual</h2><div class="cs">Média ponderada por cabeça em cada CB (kg)</div></div></div>
+      <div class="cab"><div><h2>Peso médio: entrada × atual</h2><div class="cs">Média simples dos lotes de cada CB (kg)</div></div></div>
       <div class="chart" id="chPeso"></div>
       <div class="legenda"><span><i style="background:var(--azul4)"></i>Peso de entrada</span><span><i style="background:var(--azul)"></i>Peso atual</span><span><i style="background:var(--verde)"></i>Evolução (kg)</span></div>
     </div>
     <div class="card">
-      <div class="cab"><div><h2>Ganho médio diário por CB</h2><div class="cs">GMD ponderado (kg/dia) · linha tracejada = média do filtro</div></div></div>
+      <div class="cab"><div><h2>Ganho médio diário por CB</h2><div class="cs">GMD médio dos lotes (kg/dia) · linha tracejada = média do filtro</div></div></div>
       <div class="chart" id="chGmd"></div>
       <div class="legenda"><span><i style="background:var(--azul)"></i>GMD (kg/dia)</span><span><i style="background:#f59e0b;height:3px"></i>Média geral</span></div>
     </div>
@@ -184,7 +184,7 @@
   <section class="grade g2b">
     <div class="card">
       <div class="cab">
-        <div><h2>Ranking de retiros</h2><div class="cs" id="csRank">Ordenado por GMD ponderado</div></div>
+        <div><h2>Ranking de retiros</h2><div class="cs" id="csRank">Ordenado pelo GMD médio dos lotes</div></div>
         <div class="seg" id="segRank"><button data-m="gmd" class="on">GMD</button><button data-m="evol">Evolução</button><button data-m="qtde">Animais</button></div>
       </div>
       <div class="chart" id="chRank"></div>
@@ -232,18 +232,46 @@ let ordTab = { col: null, asc: true };
 function filtrar(exceto = []) {
   return RAW.filter(r => Object.keys(F).every(d => exceto.includes(d) || F[d].size === 0 || F[d].has(chave[d](r))));
 }
+/* =====================================================================
+   CÁLCULO DOS INDICADORES — CRITÉRIO: MÉDIA SIMPLES DOS LOTES
+   ---------------------------------------------------------------------
+   • "Lote" = uma linha da aba "Precoces por carimbo" (Fazenda + Retiro + CB).
+   • Os valores de cada lote já chegam calculados pela planilha:
+       Peso entrada = média do 1º Peso (col. P) dos animais com 4º peso
+       Peso atual   = média do 4º Peso (col. W) dos animais com 4º peso
+       GMD          = média do GMD4   (col. Y) dos animais com 4º peso
+   • Ao juntar vários lotes (totais, gráficos por CB, ranking), CADA LOTE
+     CONTA IGUAL, não importa quantos animais tenha (média simples).
+     Ex.: lote A GMD 0,500 (100 cab.) e lote B GMD 0,300 (10 cab.)
+          → média = (0,500 + 0,300) ÷ 2 = 0,400
+   • Lotes com Qtde 0 ficam fora de tudo.
+   • Lote sem valor num indicador (célula vazia na planilha) fica fora da
+     média DAQUELE indicador, mas as cabeças dele continuam na quantidade.
+   ===================================================================== */
 function agregar(rows) {
-  let q = 0, qe = 0, se = 0, qa = 0, sa = 0, qg = 0, sg = 0, qb = 0, ganho = 0;
-  for (const r of rows) {
-    const n = r.qtde || 0; if (n <= 0) continue;
-    q += n;
-    if (r.pesoEntrada != null) { qe += n; se += n * r.pesoEntrada; }
-    if (r.pesoAtual != null) { qa += n; sa += n * r.pesoAtual; }
-    if (r.gmd != null) { qg += n; sg += n * r.gmd; }
-    if (r.pesoEntrada != null && r.pesoAtual != null) { qb += n; ganho += n * (r.pesoAtual - r.pesoEntrada); }
-  }
-  const e = qe ? se / qe : null, a = qa ? sa / qa : null;
-  return { q, e, a, g: qg ? sg / qg : null, evol: qb ? ganho / qb : null, ganho: qb ? ganho : null };
+  // só lotes com animais
+  const lotes = rows.filter(r => (r.qtde || 0) > 0);
+
+  // QUANTIDADE: soma das cabeças de todos os lotes (não é média)
+  const q = lotes.reduce((s, r) => s + r.qtde, 0);
+
+  // MÉDIA SIMPLES: soma dos valores ÷ número de lotes que têm valor
+  const media = vals => { const v = vals.filter(x => x != null); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : null; };
+
+  const e = media(lotes.map(r => r.pesoEntrada));   // peso de entrada médio
+  const a = media(lotes.map(r => r.pesoAtual));     // peso atual médio
+  const g = media(lotes.map(r => r.gmd));           // GMD médio
+
+  // EVOLUÇÃO: média simples de (peso atual − peso entrada) de cada lote,
+  // usando só os lotes que têm os dois pesos
+  const comAmbos = lotes.filter(r => r.pesoEntrada != null && r.pesoAtual != null);
+  const evol = media(comAmbos.map(r => r.pesoAtual - r.pesoEntrada));
+
+  // GANHO TOTAL (não é média): soma de Qtde × evolução de cada lote.
+  // É uma estimativa: aplica a evolução média do lote a todas as cabeças dele.
+  const ganho = comAmbos.length ? comAmbos.reduce((s, r) => s + r.qtde * (r.pesoAtual - r.pesoEntrada), 0) : null;
+
+  return { q, e, a, g, evol, ganho, n: lotes.length };
 }
 function alternar(dim, valor) {
   F[dim].has(valor) ? F[dim].delete(valor) : F[dim].add(valor);
@@ -442,6 +470,10 @@ function renderFiltros(cbs, fazs) {
   $('#limpar').disabled = !chips.length;
 }
 
+/* CARDS DO TOPO
+   Animais = soma das cabeças dos lotes filtrados.
+   Peso, GMD e evolução = média simples dos lotes filtrados (ver agregar()).
+   "Geral" = mesma conta usando todos os lotes da planilha, sem filtro. */
 function renderKpis() {
   const a = agregar(filtrar()), tot = agregar(RAW);
   const ic = {
@@ -454,12 +486,13 @@ function renderKpis() {
   const pct = tot.q ? a.q / tot.q * 100 : 0;
   $('#kpis').innerHTML = `
     <div class="kpi"><div class="rot">${ic.cab}Animais no lote</div><div class="val">${nf(a.q)}</div><div class="det">${a.q === tot.q ? 'Total geral da planilha' : nf(pct, 1) + '% do total de ' + nf(tot.q)}</div></div>
-    <div class="kpi"><div class="rot">${ic.peso}Peso médio atual</div><div class="val">${nf(a.a, 1)} <small>kg</small></div><div class="det">Entrada: ${nf(a.e, 1)} kg · ponderado por cabeça</div></div>
-    <div class="kpi"><div class="rot">${ic.gmd}Ganho médio diário</div><div class="val">${nf(a.g, 3)} <small>kg/dia</small></div><div class="det">${a.q === tot.q ? 'GMD ponderado pela quantidade' : 'Geral: ' + nf(tot.g, 3) + ' kg/dia'}</div></div>
+    <div class="kpi"><div class="rot">${ic.peso}Peso médio atual</div><div class="val">${nf(a.a, 1)} <small>kg</small></div><div class="det">Entrada: ${nf(a.e, 1)} kg · média simples dos lotes</div></div>
+    <div class="kpi"><div class="rot">${ic.gmd}Ganho médio diário</div><div class="val">${nf(a.g, 3)} <small>kg/dia</small></div><div class="det">${a.q === tot.q ? 'Média simples dos lotes' : 'Geral: ' + nf(tot.g, 3) + ' kg/dia'}</div></div>
     <div class="kpi"><div class="rot">${ic.evo}Evolução de peso</div><div class="val ${a.evol >= 0 ? '' : 'neg'}">${sinal(a.evol)} <small>kg/cab</small></div><div class="det">Peso atual − peso de entrada</div></div>
-    <div class="kpi"><div class="rot">${ic.tot}Ganho total do lote</div><div class="val">${nf(a.ganho != null ? a.ganho / 1000 : null, 1)} <small>t</small></div><div class="det">${nf(a.ganho)} kg somados (todas as cabeças)</div></div>`;
+    <div class="kpi"><div class="rot">${ic.tot}Ganho total do lote</div><div class="val">${nf(a.ganho != null ? a.ganho / 1000 : null, 1)} <small>t</small></div><div class="det">${nf(a.ganho)} kg estimados (Qtde × evolução de cada lote)</div></div>`;
 }
 
+/* ANIMAIS POR CARIMBO: soma das cabeças de cada CB, separada por fazenda (não usa média). */
 function renderQtde(cbs, fazs) {
   const rows = filtrar(['cb']);
   const fazVis = fazs.filter(f => !F.fazenda.size || F.fazenda.has(f));
@@ -471,6 +504,7 @@ function renderQtde(cbs, fazs) {
   $('#lgQtde').innerHTML = fazs.map(f => `<span data-f="${esc(f)}" class="${F.fazenda.size && !F.fazenda.has(f) ? 'apagado' : ''}"><i style="background:${corFaz[f]}"></i>${esc(f)}</span>`).join('');
 }
 
+/* PARTICIPAÇÃO POR FAZENDA: cabeças da fazenda ÷ total de cabeças × 100 (não usa média). */
 function renderDonut(fazs) {
   const rows = filtrar(['fazenda']);
   const itens = fazs.map(f => ({ key: f, label: f, color: corFaz[f], value: rows.filter(r => r.fazenda === f).reduce((s, r) => s + (r.qtde || 0), 0), sel: F.fazenda.has(f), apagado: F.fazenda.size && !F.fazenda.has(f) }));
@@ -479,8 +513,12 @@ function renderDonut(fazs) {
   $('#lgDonut').innerHTML = itens.map(i => `<span data-f="${esc(i.key)}" class="${i.apagado ? 'apagado' : ''}"><i style="background:${i.color}"></i>${esc(i.label)} · <b>${nf(i.value)}</b> (${tot ? nf(i.value / tot * 100, 0) : 0}%)</span>`).join('');
 }
 
+/* Agrupa os lotes por CB e calcula a média simples dos lotes de cada CB (ver agregar()). */
 function porCb(cbs, rows) { return cbs.map(c => agregar(rows.filter(r => String(r.cb) === c))); }
 
+/* PESO ENTRADA × ATUAL POR CB
+   Cada barra = média simples dos lotes daquele CB (todas as fazendas/retiros do filtro).
+   Rótulo verde = média simples de (atual − entrada) desses lotes. */
 function renderPeso(cbs) {
   const ag = porCb(cbs, filtrar(['cb']));
   barrasV($('#chPeso'), {
@@ -491,6 +529,9 @@ function renderPeso(cbs) {
   });
 }
 
+/* GMD POR CB
+   Cada barra = média simples do GMD dos lotes daquele CB.
+   Linha tracejada = média simples do GMD de todos os lotes do filtro. */
 function renderGmd(cbs) {
   const rows = filtrar(['cb']), ag = porCb(cbs, rows), geral = agregar(rows);
   barrasV($('#chGmd'), {
@@ -501,11 +542,14 @@ function renderGmd(cbs) {
   });
 }
 
+/* RANKING DE RETIROS
+   Junta os lotes (CBs) de cada retiro e calcula a média simples deles.
+   Botão 'Animais' = soma das cabeças do retiro (não é média). */
 function renderRank() {
   const rows = filtrar(['retiro']);
   const grupos = {};
   rows.forEach(r => (grupos[chave.retiro(r)] = grupos[chave.retiro(r)] || { faz: r.fazenda, ret: r.retiro, rows: [] }).rows.push(r));
-  const met = { gmd: ['g', v => nf(v, 3), 'Ordenado por GMD ponderado (kg/dia)'], evol: ['evol', v => sinal(v) + ' kg', 'Ordenado pela evolução média de peso (kg/cabeça)'], qtde: ['q', v => nf(v), 'Ordenado pela quantidade de animais'] }[rankModo];
+  const met = { gmd: ['g', v => nf(v, 3), 'Ordenado pelo GMD médio dos lotes do retiro (kg/dia)'], evol: ['evol', v => sinal(v) + ' kg', 'Ordenado pela evolução média dos lotes do retiro (kg)'], qtde: ['q', v => nf(v), 'Ordenado pela quantidade de animais'] }[rankModo];
   $('#csRank').textContent = met[2];
   const itens = Object.entries(grupos).map(([k, gr]) => { const a = agregar(gr.rows); return { key: k, label: gr.ret, sub: gr.faz + ' · ' + nf(a.q) + ' cab.', value: a[met[0]], a, color: corFaz[gr.faz] }; })
     .filter(i => i.a.q > 0).sort((x, y) => (y.value ?? -1e9) - (x.value ?? -1e9));
@@ -515,6 +559,8 @@ function renderRank() {
   });
 }
 
+/* MAPA DE CALOR: cada célula = GMD do próprio lote (retiro × CB), exatamente como está na planilha.
+   A cor vai do menor ao maior GMD entre as células visíveis. */
 function renderHeat(cbs) {
   const rows = filtrar(['retiro', 'cb']);
   const retiros = [...new Set(rows.map(chave.retiro))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
@@ -557,6 +603,9 @@ const COLS = [
   { k: 'fazenda', t: 'Fazenda' }, { k: 'retiro', t: 'Retiro' }, { k: 'cb', t: 'CB' }, { k: 'qtde', t: 'Qtde' },
   { k: 'pesoEntrada', t: 'Peso entrada' }, { k: 'pesoAtual', t: 'Peso atual' }, { k: 'gmd', t: 'GMD' }, { k: 'evol', t: 'Evolução' }
 ];
+/* TABELA: cada linha mostra os valores do lote exatamente como estão na planilha.
+   Evolução da linha = peso atual − peso entrada.
+   Rodapé = soma das cabeças + média simples dos lotes exibidos (ver agregar()). */
 function renderTabela() {
   let rows = filtrar().map(r => ({ ...r, evol: (r.pesoAtual != null && r.pesoEntrada != null) ? r.pesoAtual - r.pesoEntrada : null }));
   if (ordTab.col) {
@@ -574,7 +623,7 @@ function renderTabela() {
       <td>${r.qtde && r.gmd != null ? `<span class="gmdbar" style="width:${Math.max(2, (r.gmd / maxG) * 60)}px"></span>` + nf(r.gmd, 3) : '—'}</td>
       <td class="${r.evol > 0 ? 'pos' : r.evol < 0 ? 'neg' : ''}"><b>${r.qtde ? sinal(r.evol) : '—'}</b></td></tr>`;
   }).join('');
-  const tf = `<tr><td>Total / média ponderada</td><td>${rows.filter(r => r.qtde).length} lotes</td><td></td><td>${nf(a.q)}</td><td>${nf(a.e, 1)}</td><td>${nf(a.a, 1)}</td><td>${nf(a.g, 3)}</td><td class="${a.evol >= 0 ? 'pos' : 'neg'}">${sinal(a.evol)}</td></tr>`;
+  const tf = `<tr><td>Total / média simples</td><td>${rows.filter(r => r.qtde).length} lotes</td><td></td><td>${nf(a.q)}</td><td>${nf(a.e, 1)}</td><td>${nf(a.a, 1)}</td><td>${nf(a.g, 3)}</td><td class="${a.evol >= 0 ? 'pos' : 'neg'}">${sinal(a.evol)}</td></tr>`;
   $('#tab').innerHTML = `<thead><tr>${th}</tr></thead><tbody>${tb || '<tr><td colspan="8" class="vazio-msg">Nenhuma linha para os filtros atuais</td></tr>'}</tbody><tfoot>${tf}</tfoot>`;
   $('#csTab').textContent = `${rows.length} linhas exibidas · os valores acompanham os filtros e as seleções dos gráficos.`;
 }
